@@ -1,4 +1,4 @@
-package zp;
+package etf.openpgp.indeksi;
 
 public class Main {
  

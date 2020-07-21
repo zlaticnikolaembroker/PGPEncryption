@@ -1,4 +1,4 @@
-package zp;
+package etf.openpgp.indeksi;
 
 import javafx.application.Application;  
 import javafx.scene.Scene;  
