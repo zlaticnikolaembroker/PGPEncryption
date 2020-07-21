@@ -76,6 +76,32 @@ public class App extends Application
 		}
 	}
 	
+	private void ChooseFileForKeyPairImporting(Stage stage) {
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Open file to import key pair");
+		
+		fileChooser.getExtensionFilters().addAll(
+		         new ExtensionFilter("Text Files", "*.asc"));
+		File selectedFile = fileChooser.showOpenDialog(stage);
+		if (selectedFile != null) {
+			BufferedReader br = null;
+			try {
+				br = new BufferedReader(new FileReader(selectedFile));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} 
+			  
+			String st; 
+			try {
+				while ((st = br.readLine()) != null) 
+					System.out.println(st);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+			  
+		}
+	}
+	
     @Override
     public void start(final Stage stage) {
         BorderPane root = new BorderPane();  
@@ -84,13 +110,18 @@ public class App extends Application
         
         Menu KeysMenu = new Menu("Keys");  
         MenuItem keysMenu1=new MenuItem("Genereate key pair");  
-        MenuItem keysMenu2=new MenuItem("Import key pair");  
+        MenuItem keysMenu2=new MenuItem("Import key pair");
+        keysMenu2.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				ChooseFileForKeyPairImporting(stage);
+			}
+		});
         MenuItem keysMenu3=new MenuItem("Export key pair");  
         
         Menu EncryptMenu=new Menu("Encrypt");
         MenuItem encryptMenuItem1 = new MenuItem("Choose file");
         encryptMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
-
 			@Override
 			public void handle(ActionEvent event) {
 				ChooseFileToEncryptClicked(stage);
@@ -101,7 +132,6 @@ public class App extends Application
         Menu DecryptMenu=new Menu("Decrypt");  
         MenuItem decryptMenuItem1 = new MenuItem("Choose file");
         decryptMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
-
 			@Override
 			public void handle(ActionEvent event) {
 				ChooseFileToDecryptClicked(stage);
