@@ -1,6 +1,10 @@
 package etf.openpgp.indeksi;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 
 import javafx.application.Application;  
@@ -29,7 +33,20 @@ public class App extends Application
 		         new ExtensionFilter("Text Files", "*.txt"));
 		File selectedFile = fileChooser.showOpenDialog(stage);
 		if (selectedFile != null) {
-		   System.out.println(selectedFile.getName());
+			BufferedReader br = null;
+			try {
+				br = new BufferedReader(new FileReader(selectedFile));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} 
+			  
+			String st; 
+			try {
+				while ((st = br.readLine()) != null) 
+					System.out.println(st);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -41,7 +58,21 @@ public class App extends Application
 		         new ExtensionFilter("Text Files", "*.txt"));
 		File selectedFile = fileChooser.showOpenDialog(stage);
 		if (selectedFile != null) {
-		   System.out.println(selectedFile.getName());
+			BufferedReader br = null;
+			try {
+				br = new BufferedReader(new FileReader(selectedFile));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} 
+			  
+			String st; 
+			try {
+				while ((st = br.readLine()) != null) 
+					System.out.println(st);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+			  
 		}
 	}
 	
