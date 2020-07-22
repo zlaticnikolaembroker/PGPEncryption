@@ -8,9 +8,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.ComboBoxListCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -59,7 +57,7 @@ public class GenerateKey {
 	    	        "2048",
 	    	        "4096"
 	    	    );
-	    final ComboBox comboBox = new ComboBox(options);
+	    final ComboBox<String> comboBox = new ComboBox<String>(options);
 	    comboBox.setValue("1024");
 	    generateKeyVBox.getChildren().add(comboBox);
 	     
@@ -70,7 +68,7 @@ public class GenerateKey {
 	        public void handle(ActionEvent e) {
 	            email = mailField.getText();
 	            name = nameField.getText();
-	            keySize = Integer.parseInt(((String) comboBox.getValue()));
+	            keySize = Integer.parseInt(comboBox.getValue());
 	            
 	            boolean everythingOK = true;
 	           
