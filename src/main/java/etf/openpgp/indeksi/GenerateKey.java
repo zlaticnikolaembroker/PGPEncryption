@@ -1,5 +1,7 @@
 package etf.openpgp.indeksi;
 
+import java.util.Optional;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -9,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -19,12 +22,19 @@ public class GenerateKey {
 	
 	private static VBox generateKeyVBox;
 	
-	private static String name, email;
+	private static String name, email, algorithm, password;
 	private static int keySize;
 	
 	public static VBox openAddKeyMenu(BorderPane pane) {
 		createVBox(pane);
 		return generateKeyVBox;
+	}
+	
+	private static TextInputDialog openPasswordField(BorderPane pane) {
+		TextInputDialog dialog = new TextInputDialog("Choose password");
+		dialog.setTitle("Enter password");
+		
+		return dialog;
 	}
 	
 	private static void createVBox(BorderPane pane) {
@@ -60,6 +70,18 @@ public class GenerateKey {
 	    final ComboBox<String> comboBox = new ComboBox<String>(options);
 	    comboBox.setValue("1024");
 	    generateKeyVBox.getChildren().add(comboBox);
+	    
+	    Label keyEncryptAlgorithmLabel = new Label("Choose key encypt algorithm:");
+	    generateKeyVBox.getChildren().add(keyEncryptAlgorithmLabel);
+	    
+	    ObservableList<String> posibleAlgorithms = 
+	    	    FXCollections.observableArrayList(
+	    	        "3DES",
+	    	        "IDEA"
+	    	    );
+	    final ComboBox<String> comboBoxAlgorithms = new ComboBox<String>(posibleAlgorithms);
+	    comboBoxAlgorithms.setValue("3DES");
+	    generateKeyVBox.getChildren().add(comboBoxAlgorithms);
 	     
 	    Button generateKey = new Button("GENERATE");
 	    generateKeyVBox.getChildren().add(generateKey);
@@ -69,6 +91,7 @@ public class GenerateKey {
 	            email = mailField.getText();
 	            name = nameField.getText();
 	            keySize = Integer.parseInt(comboBox.getValue());
+	            algorithm = comboBoxAlgorithms.getValue();
 	            
 	            boolean everythingOK = true;
 	           
@@ -81,7 +104,18 @@ public class GenerateKey {
 	            }
 	            
 	            if(everythingOK) {
-	            	System.out.print(keySize);
+	            	boolean passwordEntered = false;
+	            	TextInputDialog dialog = openPasswordField(pane);
+	            	while(!passwordEntered) {
+	            		Optional<String> result = dialog.showAndWait();
+	            		if (result.isPresent()){
+	            			password = result.get();
+	            			System.out.print(password);
+	            			passwordEntered = true;
+	            		} else {
+	            			dialog.setHeaderText("You have to enter password");
+	            		}
+	            	}
 	            }
 	        }
 	    });
