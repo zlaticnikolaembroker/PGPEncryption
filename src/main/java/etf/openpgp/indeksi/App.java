@@ -6,13 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 
 import javafx.application.Application;  
 import javafx.scene.Scene;  
 import javafx.scene.control.*;  
 import javafx.scene.layout.BorderPane;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;  
@@ -126,8 +124,8 @@ public class App extends Application
         }
 	}
 	
-	private void GenerateNewKeyPair() {
-		
+	private void GenerateNewKeyPair(BorderPane pane) {
+		pane.setCenter(GenerateKey.openAddKeyMenu(pane));
 	}
 	
     @Override
@@ -141,7 +139,7 @@ public class App extends Application
         keysMenu1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				GenerateNewKeyPair();
+				GenerateNewKeyPair(root);
 			}
 		});
         
@@ -153,12 +151,7 @@ public class App extends Application
 			}
         });
         
-        final String sampleText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut \n"
-                + "labore et dolore magna aliqua.\n"
-                + "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n"
-                + "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n"
-                + "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-        
+        final String sampleText = "Test";
         MenuItem keysMenu3=new MenuItem("Export key pair");  
         keysMenu3.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -193,8 +186,7 @@ public class App extends Application
         
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
-        root.setTop(menubar);  
-        
+        root.setTop(menubar);
         stage.setScene(scene);  
         stage.show();  
     }
