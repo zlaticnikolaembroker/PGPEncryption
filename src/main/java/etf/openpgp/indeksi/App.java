@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
+import java.io.PrintWriter;
 
 import javafx.application.Application;  
 import javafx.scene.Scene;  
@@ -18,10 +18,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
 
-/**
- * Hello world!
- *
- */
 public class App extends Application
 {
 	
@@ -100,6 +96,36 @@ public class App extends Application
 			} 
 			  
 		}
+    }
+    
+    private void saveTextToFile(String content, File file) {
+        try {
+            PrintWriter writer;
+            writer = new PrintWriter(file);
+            writer.println(content);
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+	
+	private void ExportKeyPair(String sampleText, Stage stage) {
+		FileChooser fileChooser = new FileChooser();
+ 
+        //Set extension filter for text files
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("ASC files (*.asc)", "*.asc");
+        fileChooser.getExtensionFilters().add(extFilter);
+ 
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(stage);
+ 
+        if (file != null) {
+            saveTextToFile(sampleText, file);
+        }
+	}
+	
+	private void GenerateNewKeyPair(BorderPane pane) {
+		pane.setCenter(GenerateKey.openAddKeyMenu(pane));
 	}
 	
     @Override
@@ -110,14 +136,29 @@ public class App extends Application
         
         Menu KeysMenu = new Menu("Keys");  
         MenuItem keysMenu1=new MenuItem("Genereate key pair");  
+        keysMenu1.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				GenerateNewKeyPair(root);
+			}
+		});
+        
         MenuItem keysMenu2=new MenuItem("Import key pair");
         keysMenu2.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				ChooseFileForKeyPairImporting(stage);
 			}
-		});
+        });
+        
+        final String sampleText = "Test";
         MenuItem keysMenu3=new MenuItem("Export key pair");  
+        keysMenu3.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				ExportKeyPair(sampleText, stage);
+			}
+		});
         
         Menu EncryptMenu=new Menu("Encrypt");
         MenuItem encryptMenuItem1 = new MenuItem("Choose file");
@@ -145,8 +186,7 @@ public class App extends Application
         
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
-        root.setTop(menubar);  
-        
+        root.setTop(menubar);
         stage.setScene(scene);  
         stage.show();  
     }
