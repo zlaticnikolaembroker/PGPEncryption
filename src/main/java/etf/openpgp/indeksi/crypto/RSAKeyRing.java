@@ -1,5 +1,6 @@
 package etf.openpgp.indeksi.crypto;
 
+import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 
 import java.io.*;
@@ -76,6 +77,30 @@ public class RSAKeyRing {
         // upisujemo izmene u fajlove
         savePublicKeyRing();
         saveSecretKeyRing();
+    }
+
+    public static void exportSecretKeyRing() {
+        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("sec.asc"))){
+            Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings("testProka@test.com");
+            while (keyRingsIter.hasNext()) {
+                PGPSecretKeyRing keyRing = keyRingsIter.next();
+                keyRing.encode(out);
+            }
+        } catch (PGPException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void exportPublicKeyRing() {
+        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("pub.asc"))) {
+            Iterator<PGPPublicKeyRing> keyRingsIter = publicKeyRings.getKeyRings("testProka@test.com");
+            while (keyRingsIter.hasNext()) {
+                PGPPublicKeyRing keyRing = keyRingsIter.next();
+                keyRing.encode(out);
+            }
+        } catch (IOException | PGPException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
