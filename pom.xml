@@ -18,10 +18,23 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.openjfx</groupId>
-      <artifactId>javafx-controls</artifactId>
-      <version>14.0.2</version>
-  </dependency>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-controls</artifactId>
+        <version>14.0.2</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpg-jdk15on -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpg-jdk15on</artifactId>
+        <version>1.47</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-ext-jdk15on -->
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-ext-jdk15on</artifactId>
+        <version>1.47</version>
+      </dependency>
   </dependencies>
 
   <build>

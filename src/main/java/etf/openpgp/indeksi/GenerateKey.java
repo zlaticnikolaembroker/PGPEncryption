@@ -1,7 +1,13 @@
 package etf.openpgp.indeksi;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import etf.openpgp.indeksi.crypto.EncryptionAlgorithms;
+import etf.openpgp.indeksi.crypto.RSAKeyRing;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,12 +23,15 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import org.bouncycastle.openpgp.PGPEncryptedData;
+import org.bouncycastle.openpgp.PGPException;
 
 public class GenerateKey {
 	
 	private static VBox generateKeyVBox;
 	
-	private static String name, email, algorithm, password;
+	private static String name, email, password;
+	private static EncryptionAlgorithms encryptionAlgorithm;
 	private static int keySize;
 	
 	public static VBox openAddKeyMenu(BorderPane pane) {
@@ -71,14 +80,12 @@ public class GenerateKey {
 	    comboBox.setValue("1024");
 	    generateKeyVBox.getChildren().add(comboBox);
 	    
-	    Label keyEncryptAlgorithmLabel = new Label("Choose key encypt algorithm:");
+	    Label keyEncryptAlgorithmLabel = new Label("Choose key encyption algorithm:");
 	    generateKeyVBox.getChildren().add(keyEncryptAlgorithmLabel);
 	    
 	    ObservableList<String> posibleAlgorithms = 
-	    	    FXCollections.observableArrayList(
-	    	        "3DES",
-	    	        "IDEA"
-	    	    );
+	    	    FXCollections.observableArrayList(Arrays.stream(EncryptionAlgorithms.values())
+						.map(alg -> alg.getLabel()).collect(Collectors.toList()));
 	    final ComboBox<String> comboBoxAlgorithms = new ComboBox<String>(posibleAlgorithms);
 	    comboBoxAlgorithms.setValue("3DES");
 	    generateKeyVBox.getChildren().add(comboBoxAlgorithms);
@@ -91,8 +98,8 @@ public class GenerateKey {
 	            email = mailField.getText();
 	            name = nameField.getText();
 	            keySize = Integer.parseInt(comboBox.getValue());
-	            algorithm = comboBoxAlgorithms.getValue();
-	            
+	            encryptionAlgorithm = EncryptionAlgorithms.parse(comboBoxAlgorithms.getValue());
+
 	            boolean everythingOK = true;
 	           
 	            if(name.length() == 0) {
@@ -116,7 +123,12 @@ public class GenerateKey {
 	            			dialog.setHeaderText("You have to enter password");
 	            		}
 	            	}
-	            }
+					try {
+						RSAKeyRing.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email, password);
+					} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
+						ex.printStackTrace();
+					}
+				}
 	        }
 	    });
 	    
