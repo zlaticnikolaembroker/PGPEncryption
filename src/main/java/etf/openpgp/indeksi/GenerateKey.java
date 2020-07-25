@@ -7,7 +7,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import etf.openpgp.indeksi.crypto.EncryptionAlgorithms;
-import etf.openpgp.indeksi.crypto.RSAKeyRing;
+import etf.openpgp.indeksi.crypto.KeyRings;
+import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -23,7 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPException;
 
 public class GenerateKey {
@@ -33,6 +33,8 @@ public class GenerateKey {
 	private static String name, email, password;
 	private static EncryptionAlgorithms encryptionAlgorithm;
 	private static int keySize;
+
+	private static KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
 	
 	public static VBox openAddKeyMenu(BorderPane pane) {
 		createVBox(pane);
@@ -85,7 +87,7 @@ public class GenerateKey {
 	    
 	    ObservableList<String> posibleAlgorithms = 
 	    	    FXCollections.observableArrayList(Arrays.stream(EncryptionAlgorithms.values())
-						.map(alg -> alg.getLabel()).collect(Collectors.toList()));
+						.map(EncryptionAlgorithms::getLabel).collect(Collectors.toList()));
 	    final ComboBox<String> comboBoxAlgorithms = new ComboBox<String>(posibleAlgorithms);
 	    comboBoxAlgorithms.setValue("3DES");
 	    generateKeyVBox.getChildren().add(comboBoxAlgorithms);
@@ -124,7 +126,7 @@ public class GenerateKey {
 	            		}
 	            	}
 					try {
-						RSAKeyRing.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email, password);
+						keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email, password);
 					} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 						ex.printStackTrace();
 					}
