@@ -1,13 +1,10 @@
 package etf.openpgp.indeksi;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
-import javafx.application.Application;  
+import etf.openpgp.indeksi.crypto.KeyRings;
+import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
+import javafx.application.Application;
 import javafx.scene.Scene;  
 import javafx.scene.control.*;  
 import javafx.scene.layout.BorderPane;
@@ -20,6 +17,8 @@ import javafx.event.EventHandler;
 
 public class App extends Application
 {
+
+	private KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
 	
 	private void ChooseFileToEncryptClicked(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
@@ -27,22 +26,10 @@ public class App extends Application
 		
 		fileChooser.getExtensionFilters().addAll(
 		         new ExtensionFilter("Text Files", "*.txt"));
-		File selectedFile = fileChooser.showOpenDialog(stage);
-		if (selectedFile != null) {
-			BufferedReader br = null;
-			try {
-				br = new BufferedReader(new FileReader(selectedFile));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} 
-			  
-			String st; 
-			try {
-				while ((st = br.readLine()) != null) 
-					System.out.println(st);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			readFile(stage, fileChooser);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -52,23 +39,10 @@ public class App extends Application
 		
 		fileChooser.getExtensionFilters().addAll(
 		         new ExtensionFilter("Text Files", "*.txt"));
-		File selectedFile = fileChooser.showOpenDialog(stage);
-		if (selectedFile != null) {
-			BufferedReader br = null;
-			try {
-				br = new BufferedReader(new FileReader(selectedFile));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} 
-			  
-			String st; 
-			try {
-				while ((st = br.readLine()) != null) 
-					System.out.println(st);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
-			  
+		try {
+			readFile(stage, fileChooser);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -78,27 +52,20 @@ public class App extends Application
 		
 		fileChooser.getExtensionFilters().addAll(
 		         new ExtensionFilter("Text Files", "*.asc"));
-		File selectedFile = fileChooser.showOpenDialog(stage);
-		if (selectedFile != null) {
-			BufferedReader br = null;
-			try {
-				br = new BufferedReader(new FileReader(selectedFile));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} 
-			  
-			String st; 
-			try {
-				while ((st = br.readLine()) != null) 
-					System.out.println(st);
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
-			  
+		try {
+			InputStream fileIs = readFile(stage, fileChooser);
+			keyRings.importKeyPair(fileIs);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-    }
-    
-    private void saveTextToFile(String content, File file) {
+	}
+
+	private InputStream readFile(Stage stage, FileChooser fileChooser) throws FileNotFoundException {
+		File selectedFile = fileChooser.showOpenDialog(stage);
+		return new FileInputStream(selectedFile);
+	}
+
+	private void saveTextToFile(String content, File file) {
         try {
             PrintWriter writer;
             writer = new PrintWriter(file);

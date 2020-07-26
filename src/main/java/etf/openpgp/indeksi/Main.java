@@ -17,8 +17,8 @@ public class Main {
 
     public static void main(String[] args) {
         keyRings.printSecretKeyRing();
-        keyRings.exportPublicKeyRing();
-        keyRings.exportSecretKeyRing();
+//        keyRings.exportPublicKeyRing();
+//        keyRings.exportSecretKeyRing();
         App.app();
     }
 
