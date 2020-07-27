@@ -1,16 +1,15 @@
 package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
-import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
+import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -21,13 +20,13 @@ import java.util.Iterator;
  */
 public class KeyRings {
 
-    private static final String PRIVATE_KEYRING_FILE_LOCATION = "private.keyring";
+    private static final String SECRET_KEYRING_FILE_LOCATION = "secret.keyring";
     private static final String PUBLIC_KEYRING_FILE_LOCATION = "public.keyring";
 
     private KeyPairGenerator keyPairGenerator;
 
-    private File publicRingFile = new File(PRIVATE_KEYRING_FILE_LOCATION);
-    private File secretRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
+    private File publicRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
+    private File secretRingFile = new File(SECRET_KEYRING_FILE_LOCATION);
 
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
@@ -101,6 +100,34 @@ public class KeyRings {
         saveSecretKeyRing();
     }
 
+
+    public void importKeyPair(InputStream is) {
+        try {
+            PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(PGPUtil.getDecoderStream(is), new BcKeyFingerprintCalculator());
+            Object o = null;
+            while ((o = pgpObjectFactory.nextObject()) !=null) {
+                if (o instanceof PGPSecretKeyRing) {
+                    importSecretKeyRing((PGPSecretKeyRing) o);
+                } else if (o instanceof PGPPublicKeyRing) {
+                    importPublicKeyRing((PGPPublicKeyRing) o);
+                } else {
+                    System.out.println("sta je onda???");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void importPublicKeyRing(PGPPublicKeyRing publicKeyRing) {
+        publicKeyRings = PGPPublicKeyRingCollection.addPublicKeyRing(publicKeyRings, publicKeyRing);
+        savePublicKeyRing();
+    }
+
+    public void importSecretKeyRing(PGPSecretKeyRing secretKeyRing) {
+        secretKeyRings = PGPSecretKeyRingCollection.addSecretKeyRing(secretKeyRings, secretKeyRing);
+        saveSecretKeyRing();
+    }
+
     public void exportSecretKeyRing() {
         try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("sec.asc"))){
             Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings("proka@test.com");
@@ -151,33 +178,37 @@ public class KeyRings {
         Iterator<PGPSecretKeyRing> secKrIter = secretKeyRings.getKeyRings();
         while (secKrIter.hasNext()) {
             PGPSecretKeyRing skr = secKrIter.next();
-            Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
-            Iterator<PGPSecretKey> secKeysIter = skr.getSecretKeys();
+            printSecretKeyRingInfo(skr);
+        }
+    }
+
+    private void printSecretKeyRingInfo(PGPSecretKeyRing skr) {
+        Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
+        Iterator<PGPSecretKey> secKeysIter = skr.getSecretKeys();
+        System.out.println("##############");
+        System.out.println("public keys: ");
+        while (pubKeysIter.hasNext()) {
+            PGPPublicKey key = pubKeysIter.next();
+            Iterator<String> userIDs = key.getUserIDs();
             System.out.println("##############");
-            System.out.println("public keys: ");
-            while (pubKeysIter.hasNext()) {
-                PGPPublicKey key = pubKeysIter.next();
-                Iterator<String> userIDs = key.getUserIDs();
-                System.out.println("##############");
-                System.out.println("key id: " + key.getKeyID());
-                System.out.println("key size: " + key.getBitStrength());
-                System.out.println("userIds:");
-                userIDs.forEachRemaining(System.out::println);
-                System.out.println("encryption key: " + key.isEncryptionKey());
-                System.out.println("##############");
-            }
-            System.out.println("secret keys:");
-            while (secKeysIter.hasNext()) {
-                PGPSecretKey key = secKeysIter.next();
-                Iterator<String> userIDs = key.getUserIDs();
-                System.out.println("##############");
-                System.out.println("key id: " + key.getKeyID());
-                System.out.println("key encryption algorithm: " + key.getKeyEncryptionAlgorithm());
-                System.out.println("userIds:");
-                userIDs.forEachRemaining(System.out::println);
-                System.out.println("signing key: " + key.isSigningKey());
-                System.out.println("##############");
-            }
+            System.out.println("key id: " + key.getKeyID());
+            System.out.println("key size: " + key.getBitStrength());
+            System.out.println("userIds:");
+            userIDs.forEachRemaining(System.out::println);
+            System.out.println("encryption key: " + key.isEncryptionKey());
+            System.out.println("##############");
+        }
+        System.out.println("secret keys:");
+        while (secKeysIter.hasNext()) {
+            PGPSecretKey key = secKeysIter.next();
+            Iterator<String> userIDs = key.getUserIDs();
+            System.out.println("##############");
+            System.out.println("key id: " + key.getKeyID());
+            System.out.println("key encryption algorithm: " + key.getKeyEncryptionAlgorithm());
+            System.out.println("userIds:");
+            userIDs.forEachRemaining(System.out::println);
+            System.out.println("signing key: " + key.isSigningKey());
+            System.out.println("##############");
         }
     }
 
