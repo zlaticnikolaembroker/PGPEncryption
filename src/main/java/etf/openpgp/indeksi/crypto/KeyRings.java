@@ -30,6 +30,14 @@ public class KeyRings {
 
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
+    
+    public static PGPPublicKeyRingCollection getPublicKeyRings() {
+    	return publicKeyRings;
+    }
+    
+    public static PGPSecretKeyRingCollection getSecretKeyRings() {
+    	return secretKeyRings;
+    }
 
     public KeyRings(KeyPairGenerator keyPairGenerator) {
         if (publicRingFile.exists()) {

@@ -1,4 +1,4 @@
-package etf.openpgp.indeksi;
+package etf.openpgp.indeksi.front;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -126,7 +126,8 @@ public class GenerateKey {
 	            		}
 	            	}
 					try {
-						keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email, password);
+						keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email + "|" + name, password);
+						pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
 					} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 						ex.printStackTrace();
 					}
@@ -137,7 +138,7 @@ public class GenerateKey {
 	    Button cancel = new Button("CANCEL");
 	    cancel.setOnAction(new EventHandler<ActionEvent>() {
 	        public void handle(ActionEvent e) {
-	            pane.setCenter(null);
+	        	pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
 	        }
 	    });
 	    generateKeyVBox.getChildren().add(cancel);
