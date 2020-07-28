@@ -129,7 +129,7 @@ public class GenerateKey {
 	            	if (passwordEntered) {
 						try {
 							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email + "|" + name, password);
-							pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
+							pane.setCenter(KeyTable.openSecretKeysTable(pane));
 						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 							ex.printStackTrace();
 						}
@@ -141,7 +141,7 @@ public class GenerateKey {
 	    Button cancel = new Button("CANCEL");
 	    cancel.setOnAction(new EventHandler<ActionEvent>() {
 	        public void handle(ActionEvent e) {
-	        	pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
+	        	pane.setCenter(KeyTable.openSecretKeysTable(pane));
 	        }
 	    });
 	    generateKeyVBox.getChildren().add(cancel);

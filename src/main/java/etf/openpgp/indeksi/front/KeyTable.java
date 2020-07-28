@@ -19,7 +19,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-public class SecretKeysTable {
+public class KeyTable {
 	
 	private static VBox secretKeysVBox;
 	
@@ -42,29 +42,32 @@ public class SecretKeysTable {
                 Iterator<String> userIDs = key.getUserIDs();
                 long keyId = key.getKeyID();
                 String email = "", name = "";
+                boolean isMasterKey = false;
                 if (userIDs.hasNext()) {
                 	 String userId = userIDs.next();
                      email = userId.substring(0, userId.indexOf('|'));
                      name = userId.substring(userId.indexOf('|') + 1, userId.length());
+                     isMasterKey = true;
                 }
                
-                result.add(new KeyColumn(email, name, keyId, true));
+                result.add(new KeyColumn(email, name, keyId, true, isMasterKey));
                 
             }
-            System.out.println("secret keys:");
             while (secKeysIter.hasNext()) {
                 PGPSecretKey key = secKeysIter.next();
                 Iterator<String> userIDs = key.getUserIDs();
                 
                 long keyID =  key.getKeyID();
                 String email = "", name = "";
+                boolean isMasterKey = false;
                 if (userIDs.hasNext()) {
                 	String userId = userIDs.next();
                 	email = userId.substring(0, userId.indexOf('|'));
                     name = userId.substring(userId.indexOf('|') + 1, userId.length());
+                    isMasterKey = true;
                 }
                 
-                result.add(new KeyColumn(email, name, keyID, false));
+                result.add(new KeyColumn(email, name, keyID, false, isMasterKey));
             }
         }
         
@@ -95,11 +98,15 @@ public class SecretKeysTable {
 		
 		TableColumn<String, KeyColumn> column4 = new TableColumn<>("Is Public");
 		column4.setCellValueFactory(new PropertyValueFactory<>("isPublic"));
+		
+		TableColumn<String, KeyColumn> column5 = new TableColumn<>("Is MasterKey");
+		column5.setCellValueFactory(new PropertyValueFactory<>("isMasterKey"));
 
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
 		tableView.getColumns().add(column3);
 		tableView.getColumns().add(column4);
+		tableView.getColumns().add(column5);
 		
 		List<KeyColumn> keysList = getKeyColumns();
 		

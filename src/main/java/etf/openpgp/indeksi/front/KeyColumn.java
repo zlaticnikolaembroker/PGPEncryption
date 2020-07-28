@@ -4,13 +4,14 @@ public class KeyColumn {
 	
 	private String email, name;
 	private long keyId;
-	private boolean isPublic;
+	private boolean isPublic, isMasterKey;
 	
-	public KeyColumn(String _email, String _name, long _keyId, boolean _isPublic) {
+	public KeyColumn(String _email, String _name, long _keyId, boolean _isPublic, boolean _isMasterKey) {
 		this.email = _email;
 		this.name = _name;
 		this.keyId = _keyId;
 		this.isPublic = _isPublic;
+		this.isMasterKey = _isMasterKey;
 	}
 	
 	public String getEmail() {
@@ -27,6 +28,14 @@ public class KeyColumn {
 	
 	public boolean getIsPublic() {
 		return this.isPublic;
+	}
+	
+	public boolean getIsMasterKey() {
+		return this.isMasterKey;
+	}
+	
+	public void setIsMasterKey(boolean newValue) {
+		this.isMasterKey = newValue;
 	}
 
 	public void setEmail(String newMail) {

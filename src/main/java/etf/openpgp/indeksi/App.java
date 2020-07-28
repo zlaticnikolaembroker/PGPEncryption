@@ -5,7 +5,7 @@ import java.io.*;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import etf.openpgp.indeksi.front.GenerateKey;
-import etf.openpgp.indeksi.front.SecretKeysTable;
+import etf.openpgp.indeksi.front.KeyTable;
 import javafx.application.Application;
 import javafx.scene.Scene;  
 import javafx.scene.control.*;  
@@ -156,7 +156,7 @@ public class App extends Application
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(SecretKeysTable.openSecretKeysTable(root));
+        root.setCenter(KeyTable.openSecretKeysTable(root));
         stage.setScene(scene);  
         stage.show();  
     }
