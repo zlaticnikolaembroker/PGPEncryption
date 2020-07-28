@@ -119,18 +119,21 @@ public class GenerateKey {
 	            		Optional<String> result = dialog.showAndWait();
 	            		if (result.isPresent()){
 	            			password = result.get();
-	            			System.out.print(password);
-	            			passwordEntered = true;
+	            			if (password.length() > 0) {
+	            				passwordEntered = true;
+	            			}
 	            		} else {
-	            			dialog.setHeaderText("You have to enter password");
+	            			break;
 	            		}
 	            	}
-					try {
-						keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email + "|" + name, password);
-						pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
-					} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
-						ex.printStackTrace();
-					}
+	            	if (passwordEntered) {
+						try {
+							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email + "|" + name, password);
+							pane.setCenter(SecretKeysTable.openSecretKeysTable(pane));
+						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
+							ex.printStackTrace();
+						}
+	            	}
 				}
 	        }
 	    });
