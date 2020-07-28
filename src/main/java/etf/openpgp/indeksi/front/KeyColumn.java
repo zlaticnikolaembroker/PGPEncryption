@@ -5,6 +5,7 @@ import org.bouncycastle.openpgp.PGPSecretKey;
 
 public class KeyColumn {
 	
+	//not sure if we need password to be stored, since we will need to use method from keyRings which will need password(passphrase) to be listed as parameters
 	private String email, name, password;
 	private long keyId;
 	private boolean isPublic, isMasterKey;
@@ -28,6 +29,10 @@ public class KeyColumn {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public String getUserId() {
+		return email + "|" + name;
 	}
 	
 	public String getPassword() {
@@ -85,4 +90,5 @@ public class KeyColumn {
 	public void setSecretkey(PGPSecretKey newSecretKey) {
 		this.secretKey = newSecretKey;
 	}
+	
 }
