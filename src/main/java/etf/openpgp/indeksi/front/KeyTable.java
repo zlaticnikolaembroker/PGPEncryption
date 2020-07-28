@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
@@ -50,7 +51,7 @@ public class KeyTable {
                      isMasterKey = true;
                 }
                
-                result.add(new KeyColumn(email, name, keyId, true, isMasterKey));
+                result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));
                 
             }
             while (secKeysIter.hasNext()) {
@@ -67,7 +68,29 @@ public class KeyTable {
                     isMasterKey = true;
                 }
                 
-                result.add(new KeyColumn(email, name, keyID, false, isMasterKey));
+                result.add(new KeyColumn(email, name, "", keyID, false, isMasterKey, null, key));
+            }
+        }
+        
+        Iterator<PGPPublicKeyRing> publicKeyIterator = KeyRings.getPublicKeyRings().getKeyRings();
+        while (publicKeyIterator.hasNext()) {
+        	PGPPublicKeyRing skr = publicKeyIterator.next();
+        	Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
+            while (pubKeysIter.hasNext()) {
+                PGPPublicKey key = pubKeysIter.next();
+                Iterator<String> userIDs = key.getUserIDs();
+                long keyId = key.getKeyID();
+                String email = "", name = "";
+                boolean isMasterKey = false;
+                if (userIDs.hasNext()) {
+                	 String userId = userIDs.next();
+                     email = userId.substring(0, userId.indexOf('|'));
+                     name = userId.substring(userId.indexOf('|') + 1, userId.length());
+                     isMasterKey = true;
+                }
+               
+                result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));
+                
             }
         }
         
