@@ -10,6 +10,7 @@ import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import etf.openpgp.indeksi.crypto.KeyRings;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -19,6 +20,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableCell;
+import javafx.stage.Stage;
+import javafx.util.Callback;
 
 public class KeyTable {
 	
@@ -124,12 +129,42 @@ public class KeyTable {
 		
 		TableColumn<String, KeyColumn> column5 = new TableColumn<>("Is MasterKey");
 		column5.setCellValueFactory(new PropertyValueFactory<>("isMasterKey"));
+		
+		TableColumn<KeyColumn, Void> colBtn = new TableColumn("Delete");
+
+        Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> cellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
+            @Override
+            public TableCell<KeyColumn, Void> call(final TableColumn<KeyColumn, Void> param) {
+                final TableCell<KeyColumn, Void> cell = new TableCell<KeyColumn, Void>() {
+
+                    private final Button btn = new Button("Delete");
+
+                    {
+                        
+                    }
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(btn);
+                        }
+                    }
+                };
+                return cell;
+            }
+        };
+
+        colBtn.setCellFactory(cellFactory);
 
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
 		tableView.getColumns().add(column3);
 		tableView.getColumns().add(column4);
 		tableView.getColumns().add(column5);
+		tableView.getColumns().add(colBtn);
 		
 		List<KeyColumn> keysList = getKeyColumns();
 		
