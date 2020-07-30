@@ -1,8 +1,10 @@
 package etf.openpgp.indeksi.front;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
@@ -41,47 +43,38 @@ public class KeyTable {
     private static String getEmailFromUserID(String userID) {
         return userID.substring(userID.indexOf(" <") + 2, userID.indexOf(">"));
     }
+
+    private static Map<String, Integer> shownKeys = new HashMap<>();
 	
 	private static List<KeyColumn> getKeyColumns() {
 		
 		List<KeyColumn> result = new ArrayList<KeyColumn>();
 		
-		Iterator<PGPSecretKeyRing> secKrIter = KeyRings.getSecretKeyRings().getKeyRings();
+        Iterator<PGPSecretKeyRing> secKrIter = KeyRings.getSecretKeyRings().getKeyRings();
+        
         while (secKrIter.hasNext()) {
         	PGPSecretKeyRing skr = secKrIter.next();
-        	Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
             Iterator<PGPSecretKey> secKeysIter = skr.getSecretKeys();
-            while (pubKeysIter.hasNext()) {
-                PGPPublicKey key = pubKeysIter.next();
-                Iterator<String> userIDs = key.getUserIDs();
-                long keyId = key.getKeyID();
-                String email = "", name = "";
-                boolean isMasterKey = false;
-                if (userIDs.hasNext()) {
-                	String userId = userIDs.next();
-                    name = getNameFromUserID(userId);
-                    email = getEmailFromUserID(userId);
-                    isMasterKey = true;
-                }
-               
-                result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));
-                
-            }
+            boolean found = false; 
             while (secKeysIter.hasNext()) {
                 PGPSecretKey key = secKeysIter.next();
                 Iterator<String> userIDs = key.getUserIDs();
                 
                 long keyID =  key.getKeyID();
-                String email = "", name = "";
-                boolean isMasterKey = false;
-                if (userIDs.hasNext()) {
-                	String userId = userIDs.next();
-                	name = getNameFromUserID(userId);
-                    email = getEmailFromUserID(userId);
-                    isMasterKey = true;
+                if (!found) {
+                    String email = "", name = "";
+                    if (userIDs.hasNext()) {
+                        String userId = userIDs.next();
+                        name = getNameFromUserID(userId);
+                        email = getEmailFromUserID(userId);
+                    }
+                    
+                    result.add(new KeyColumn(email, name, "", keyID, false, null, key));
+                    shownKeys.put(Long.toString(keyID), 1);
+                    found = true;
+                } else {
+                	shownKeys.put(Long.toString(keyID), 1);
                 }
-                
-                result.add(new KeyColumn(email, name, "", keyID, false, isMasterKey, null, key));
             }
         }
         
@@ -92,17 +85,19 @@ public class KeyTable {
             while (pubKeysIter.hasNext()) {
                 PGPPublicKey key = pubKeysIter.next();
                 Iterator<String> userIDs = key.getUserIDs();
-                long keyId = key.getKeyID();
-                String email = "", name = "";
-                boolean isMasterKey = false;
-                if (userIDs.hasNext()) {
-                	String userId = userIDs.next();
-                    name = getNameFromUserID(userId);
-                    email = getEmailFromUserID(userId);
-                    isMasterKey = true;
+                long keyID = key.getKeyID();
+                if (shownKeys.get(Long.toString(keyID)) == null) {
+                    String email = "", name = "";
+                    if (userIDs.hasNext()) {
+                        String userId = userIDs.next();
+                        name = getNameFromUserID(userId);
+                        email = getEmailFromUserID(userId);
+                    }
+                
+                    result.add(new KeyColumn(email, name, "", keyID, true, key, null));
+                    shownKeys.put(Long.toString(keyID), 1);
+                    break;
                 }
-               
-                result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));
                 
             }
         }
@@ -134,9 +129,6 @@ public class KeyTable {
 		
 		TableColumn<String, KeyColumn> column4 = new TableColumn<>("Is Public");
 		column4.setCellValueFactory(new PropertyValueFactory<>("isPublic"));
-		
-		TableColumn<String, KeyColumn> column5 = new TableColumn<>("Is MasterKey");
-		column5.setCellValueFactory(new PropertyValueFactory<>("isMasterKey"));
 		
 		TableColumn<KeyColumn, Void> colBtn = new TableColumn("Delete");
 
@@ -171,7 +163,6 @@ public class KeyTable {
 		tableView.getColumns().add(column2);
 		tableView.getColumns().add(column3);
 		tableView.getColumns().add(column4);
-		tableView.getColumns().add(column5);
 		tableView.getColumns().add(colBtn);
 		
 		List<KeyColumn> keysList = getKeyColumns();
