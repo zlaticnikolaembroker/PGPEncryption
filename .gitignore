@@ -30,3 +30,6 @@ target/
 # Compiled class file
 *.class
 /bin/
+
+# Keyrings
+*.keyring
