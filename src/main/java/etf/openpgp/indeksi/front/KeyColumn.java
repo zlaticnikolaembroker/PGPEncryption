@@ -7,18 +7,17 @@ public class KeyColumn {
 	
 	//not sure if we need password to be stored, since we will need to use method from keyRings which will need password(passphrase) to be listed as parameters
 	private String email, name, password;
-	private long keyId;
-	private boolean isPublic, isMasterKey;
+	private String keyId;
+	private boolean isPublic;
 	private PGPPublicKey publicKey;
 	private PGPSecretKey secretKey;
 	
-	public KeyColumn(String _email, String _name, String _password, long _keyId, boolean _isPublic, boolean _isMasterKey, PGPPublicKey _publicKey, PGPSecretKey _secretKey) {
+	public KeyColumn(String _email, String _name, String _password, long _keyId, boolean _isPublic, PGPPublicKey _publicKey, PGPSecretKey _secretKey) {
 		this.email = _email;
 		this.name = _name;
 		this.password = _password;
-		this.keyId = _keyId;
+		this.keyId = Long.toHexString(_keyId);
 		this.isPublic = _isPublic;
-		this.isMasterKey = _isMasterKey;
 		this.publicKey = _publicKey;
 		this.secretKey = _secretKey;
 	}
@@ -39,17 +38,18 @@ public class KeyColumn {
 		return this.password;
 	}
 	
-	public long getKeyId() {
+	public String getOriginalKeyId() {
 		return keyId;
+	}
+	
+	public String getKeyId() {
+		return keyId.toUpperCase().substring(0,4) + " " + keyId.toUpperCase().substring(4, 8) + " " + keyId.toUpperCase().substring(8, 12) + " " + keyId.toUpperCase().substring(12);
 	}
 	
 	public boolean getIsPublic() {
 		return this.isPublic;
 	}
 	
-	public boolean getIsMasterKey() {
-		return this.isMasterKey;
-	}
 	
 	public PGPPublicKey getPublicKey() {
 		return this.publicKey;
@@ -57,10 +57,6 @@ public class KeyColumn {
 	
 	public PGPSecretKey getSecretKey() {
 		return this.secretKey;
-	}
-	
-	public void setIsMasterKey(boolean newValue) {
-		this.isMasterKey = newValue;
 	}
 
 	public void setEmail(String newMail) {
@@ -76,7 +72,7 @@ public class KeyColumn {
 	}
 	
 	public void setKeyId(long newKeyId) {
-		this.keyId = newKeyId;
+		this.keyId = Long.toHexString(newKeyId);
 	}
 	
 	public void setIsPublic(boolean newIsPublic) {
