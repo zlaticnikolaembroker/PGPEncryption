@@ -56,7 +56,9 @@ public class App extends Application
 		         new ExtensionFilter("Text Files", "*.asc"));
 		try {
 			InputStream fileIs = readFile(stage, fileChooser);
-			keyRings.importKeyPair(fileIs);
+			if (fileIs != null) {
+				keyRings.importKeyPair(fileIs);
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -64,6 +66,9 @@ public class App extends Application
 
 	private InputStream readFile(Stage stage, FileChooser fileChooser) throws FileNotFoundException {
 		File selectedFile = fileChooser.showOpenDialog(stage);
+		if (selectedFile == null) {
+			return null;
+		}
 		return new FileInputStream(selectedFile);
 	}
 
