@@ -48,7 +48,7 @@ public class App extends Application
 		}
 	}
 	
-	private void ChooseFileForKeyPairImporting(Stage stage) {
+	private void ChooseFileForKeyPairImporting(Stage stage, BorderPane root) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to import key pair");
 		
@@ -58,6 +58,7 @@ public class App extends Application
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
+				root.setCenter(KeyTable.openSecretKeysTable(root));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -121,7 +122,7 @@ public class App extends Application
         keysMenu2.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				ChooseFileForKeyPairImporting(stage);
+				ChooseFileForKeyPairImporting(stage, root);
 			}
         });
         
