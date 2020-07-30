@@ -25,8 +25,8 @@ public class KeyRings {
 
     private KeyPairGenerator keyPairGenerator;
 
-    private File publicRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
-    private File secretRingFile = new File(SECRET_KEYRING_FILE_LOCATION);
+    private static File publicRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
+    private static File secretRingFile = new File(SECRET_KEYRING_FILE_LOCATION);
 
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
@@ -163,7 +163,7 @@ public class KeyRings {
     /**
      * Metoda upisuje javni keyring u fajl.
      */
-    private void savePublicKeyRing() {
+    private static void savePublicKeyRing() {
         try (OutputStream out = new FileOutputStream(publicRingFile)) {
             publicKeyRings.encode(out);
         } catch (IOException ioe) {
@@ -174,7 +174,7 @@ public class KeyRings {
     /**
      * Metoda upisuje tajni keyring u fajl.
      */
-    private void saveSecretKeyRing() {
+    private static void saveSecretKeyRing() {
         try (OutputStream out = new FileOutputStream(secretRingFile)) {
             secretKeyRings.encode(out);
         } catch (IOException ioe) {
@@ -222,6 +222,16 @@ public class KeyRings {
 
     public void setKeyPairGenerator(KeyPairGenerator keyPairGenerator) {
         this.keyPairGenerator = keyPairGenerator;
+    }
+    
+    public static void deleteSecretKey(PGPSecretKeyRing secretKeyRing) {
+    	secretKeyRings = secretKeyRings.removeSecretKeyRing(secretKeyRings, secretKeyRing);
+    	saveSecretKeyRing();
+    }
+    
+    public static void deletePublicKey(PGPPublicKeyRing publicKeyRing) {
+    	publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
+    	savePublicKeyRing();
     }
 
 }

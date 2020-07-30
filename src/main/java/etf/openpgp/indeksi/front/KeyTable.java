@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKey;
@@ -146,8 +147,18 @@ public class KeyTable {
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                System.out.println(keyColumn.getEmail()
-                                        + "   " + keyColumn.getOriginalKeyId());
+                                if (keyColumn.getIsPublic()) {
+                                	try {
+										KeyRings.deletePublicKey(KeyRings.getPublicKeyRings().getPublicKeyRing(Long.valueOf(keyColumn.getOriginalKeyId())));
+										refreshTableRows(tableView);
+									} catch (NumberFormatException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (PGPException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} 
+                                }
                             });
                             setGraphic(btn);
                             setText(null);
@@ -166,6 +177,13 @@ public class KeyTable {
 		tableView.getColumns().add(column4);
 		tableView.getColumns().add(colBtn);
 		
+		refreshTableRows(tableView);
+
+	}
+	
+	private static void refreshTableRows(TableView tableView) {
+		secretKeysVBox.getChildren().clear();
+		tableView.getItems().clear();
 		List<KeyColumn> keysList = getKeyColumns();
 		
 		for(int i = 0; i < keysList.size(); i++) {
@@ -173,6 +191,5 @@ public class KeyTable {
 		}
 		
 		secretKeysVBox.getChildren().add(tableView);
-
 	}
 }

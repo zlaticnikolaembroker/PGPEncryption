@@ -6,8 +6,8 @@ import org.bouncycastle.openpgp.PGPSecretKey;
 public class KeyColumn {
 	
 	//not sure if we need password to be stored, since we will need to use method from keyRings which will need password(passphrase) to be listed as parameters
-	private String email, name, password;
-	private String keyId;
+	private String email, name, password, keyId;
+	private long originalKeyId;
 	private boolean isPublic;
 	private PGPPublicKey publicKey;
 	private PGPSecretKey secretKey;
@@ -16,7 +16,8 @@ public class KeyColumn {
 		this.email = _email;
 		this.name = _name;
 		this.password = _password;
-		this.keyId = Long.toHexString(_keyId);
+		this.originalKeyId = _keyId;
+		this.keyId = Long.toHexString(_keyId).toUpperCase().substring(0,4) + " " + Long.toHexString(_keyId).toUpperCase().substring(4, 8) + " " + Long.toHexString(_keyId).toUpperCase().substring(8, 12) + " " + Long.toHexString(_keyId).toUpperCase().substring(12);
 		this.isPublic = _isPublic;
 		this.publicKey = _publicKey;
 		this.secretKey = _secretKey;
@@ -38,8 +39,8 @@ public class KeyColumn {
 		return this.password;
 	}
 	
-	public String getOriginalKeyId() {
-		return keyId;
+	public long getOriginalKeyId() {
+		return this.originalKeyId;
 	}
 	
 	public String getKeyId() {
