@@ -32,7 +32,15 @@ public class KeyTable {
 	public static VBox openSecretKeysTable(BorderPane pane) {
 		createVBox(pane);
 		return secretKeysVBox;
-	}
+    }
+    
+    private static String getNameFromUserID(String userID) {
+        return userID.substring(0, userID.indexOf(" <"));
+    }
+
+    private static String getEmailFromUserID(String userID) {
+        return userID.substring(userID.indexOf(" <") + 2, userID.indexOf(">"));
+    }
 	
 	private static List<KeyColumn> getKeyColumns() {
 		
@@ -50,10 +58,10 @@ public class KeyTable {
                 String email = "", name = "";
                 boolean isMasterKey = false;
                 if (userIDs.hasNext()) {
-                	 String userId = userIDs.next();
-                     email = userId.substring(0, userId.indexOf('|'));
-                     name = userId.substring(userId.indexOf('|') + 1, userId.length());
-                     isMasterKey = true;
+                	String userId = userIDs.next();
+                    name = getNameFromUserID(userId);
+                    email = getEmailFromUserID(userId);
+                    isMasterKey = true;
                 }
                
                 result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));
@@ -68,8 +76,8 @@ public class KeyTable {
                 boolean isMasterKey = false;
                 if (userIDs.hasNext()) {
                 	String userId = userIDs.next();
-                	email = userId.substring(0, userId.indexOf('|'));
-                    name = userId.substring(userId.indexOf('|') + 1, userId.length());
+                	name = getNameFromUserID(userId);
+                    email = getEmailFromUserID(userId);
                     isMasterKey = true;
                 }
                 
@@ -88,10 +96,10 @@ public class KeyTable {
                 String email = "", name = "";
                 boolean isMasterKey = false;
                 if (userIDs.hasNext()) {
-                	 String userId = userIDs.next();
-                     email = userId.substring(0, userId.indexOf('|'));
-                     name = userId.substring(userId.indexOf('|') + 1, userId.length());
-                     isMasterKey = true;
+                	String userId = userIDs.next();
+                    name = getNameFromUserID(userId);
+                    email = getEmailFromUserID(userId);
+                    isMasterKey = true;
                 }
                
                 result.add(new KeyColumn(email, name, "", keyId, true, isMasterKey, key, null));

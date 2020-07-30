@@ -32,7 +32,7 @@ public class KeyColumn {
 	}
 	
 	public String getUserId() {
-		return email + "|" + name;
+		return name + " <" + email + ">";
 	}
 	
 	public String getPassword() {

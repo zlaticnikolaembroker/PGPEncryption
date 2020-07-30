@@ -128,7 +128,7 @@ public class GenerateKey {
 	            	}
 	            	if (passwordEntered) {
 						try {
-							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), email + "|" + name, password);
+							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), name + " <" + email + ">", password);
 							pane.setCenter(KeyTable.openSecretKeysTable(pane));
 						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 							ex.printStackTrace();
