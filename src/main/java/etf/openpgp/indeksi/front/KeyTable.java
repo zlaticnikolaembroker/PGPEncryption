@@ -12,7 +12,6 @@ import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import etf.openpgp.indeksi.crypto.KeyRings;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -24,7 +23,6 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class KeyTable {
@@ -130,7 +128,7 @@ public class KeyTable {
 		TableColumn<String, KeyColumn> column4 = new TableColumn<>("Is Public");
 		column4.setCellValueFactory(new PropertyValueFactory<>("isPublic"));
 		
-		TableColumn<KeyColumn, Void> colBtn = new TableColumn("Delete");
+		TableColumn<KeyColumn, Void> colBtn = new TableColumn<>("Delete");
 
         Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> cellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
             @Override
@@ -139,17 +137,20 @@ public class KeyTable {
 
                     private final Button btn = new Button("Delete");
 
-                    {
-                        
-                    }
-
                     @Override
                     public void updateItem(Void item, boolean empty) {
                         super.updateItem(item, empty);
                         if (empty) {
                             setGraphic(null);
+                            setText(null);
                         } else {
+                            btn.setOnAction(event -> {
+                                KeyColumn keyColumn = getTableView().getItems().get(getIndex());
+                                System.out.println(keyColumn.getEmail()
+                                        + "   " + keyColumn.getOriginalKeyId());
+                            });
                             setGraphic(btn);
+                            setText(null);
                         }
                     }
                 };
