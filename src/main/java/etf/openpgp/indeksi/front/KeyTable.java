@@ -2,6 +2,8 @@ package etf.openpgp.indeksi.front;
 
 import java.util.*;
 
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
@@ -10,16 +12,12 @@ import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import etf.openpgp.indeksi.crypto.KeyRings;
 import javafx.geometry.Insets;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
 import javafx.util.Callback;
 
 public class KeyTable {
@@ -145,38 +143,21 @@ public class KeyTable {
                         super.updateItem(item, empty);
                         if (empty) {
                             setGraphic(null);
-                            setText(null);
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                if (keyColumn.getIsPublic()) {
-                                	try {
-										keyRings.deletePublicKey(keyColumn.getOriginalKeyId());
-										refreshTableRows(tableView);
-									} catch (NumberFormatException e) {
-										e.printStackTrace();
-									}
-                                }
-                                else {
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
+                                Boolean deletionConfirmed = confirmationOptional.get();
+                                if (deletionConfirmed) {
                                     Long keyId = keyColumn.getOriginalKeyId();
-                                    PasswordDialog passwordDialog = new PasswordDialog();
-                                    Optional<String> passwordOptional = passwordDialog.showAndWait();
-                                    if (passwordOptional.isPresent()) {
-                                        String password = passwordOptional.get();
-                                        boolean result = keyRings.verifySecretKeyPassword(keyId, password);
-                                        if (result) {
-                                            // verifikacija lozinke je uspesna, brisemo kljuc
-                                            keyRings.deleteSecretKey(keyId);
-                                            keyRings.deletePublicKey(keyId);
-                                            refreshTableRows(tableView);
-                                        }
-                                    }
-
+                                    boolean isPublic = keyColumn.getIsPublic();
+                                    if (deleteKey(keyId, isPublic)) refreshTableRows(tableView);
                                 }
                             });
                             setGraphic(btn);
-                            setText(null);
                         }
+                        setText(null);
                     }
                 };
                 return cell;
@@ -194,6 +175,54 @@ public class KeyTable {
 		refreshTableRows(tableView);
 
 	}
+
+    private boolean deleteKey(Long keyId, boolean isPublic) {
+	    boolean keyDeleted = false;
+        if (isPublic) {
+            try {
+                keyRings.deletePublicKey(keyId);
+                keyDeleted = true;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        } else {
+            int passwordAttemptCounter = 0;
+            boolean passwordVerified = false;
+            PasswordDialog passwordDialog = new PasswordDialog();
+
+            while (!passwordVerified && passwordAttemptCounter < 3) {
+                Optional<String> passwordOptional = passwordDialog.showAndWait();
+                if (passwordOptional.isPresent()) {
+                    String password = passwordOptional.get();
+                    passwordVerified = keyRings.verifySecretKeyPassword(keyId, password);
+                }
+                passwordAttemptCounter++;
+            }
+            if (passwordVerified) {
+                // verifikacija lozinke je uspesna, brisemo kljuc
+                keyRings.deleteSecretKey(keyId);
+                keyRings.deletePublicKey(keyId);
+                keyDeleted = true;
+            }
+        }
+        return keyDeleted;
+    }
+
+    private Dialog showConfirmDialog(String name, String email) {
+        Dialog<Boolean> confirmDialog = new Dialog();
+        confirmDialog.setTitle("Are you sure?");
+        Label label = new Label("Are you sure you want to delete key " + name + "<" + email + ">");
+        HBox content = new HBox();
+        content.getChildren().add(label);
+        confirmDialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
+        confirmDialog.setResultConverter(buttonClicked -> {
+            if (buttonClicked == ButtonType.YES) return Boolean.TRUE;
+            else return Boolean.FALSE;
+        });
+        confirmDialog.getDialogPane().setContent(content);
+
+        return confirmDialog;
+    }
 	
 	private void refreshTableRows(TableView tableView) {
 		secretKeysVBox.getChildren().clear();

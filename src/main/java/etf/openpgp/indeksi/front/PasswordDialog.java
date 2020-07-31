@@ -17,6 +17,7 @@ public class PasswordDialog extends Dialog<String> {
     public PasswordDialog(String title, String labelText) {
         setTitle(title);
         PasswordField passwordField = new PasswordField();
+        passwordField.requestFocus();
         Label label = new Label(labelText);
         HBox content = new HBox();
         content.setAlignment(Pos.CENTER_LEFT);

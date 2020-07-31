@@ -237,7 +237,6 @@ public class KeyRings {
                 PBESecretKeyDecryptor keyDecryptor = new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(password.toCharArray());
                 PGPPrivateKey privateKey = secretKey.extractPrivateKey(keyDecryptor);
             } catch (PGPException e) {
-                e.printStackTrace();
                 return false;
             }
         }
