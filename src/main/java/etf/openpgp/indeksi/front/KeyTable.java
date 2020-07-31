@@ -28,28 +28,34 @@ import javafx.util.Callback;
 
 public class KeyTable {
 	
-	private static VBox secretKeysVBox;
+	private VBox secretKeysVBox;
+
+	private KeyRings keyRings;
+
+    public KeyTable(KeyRings keyRings) {
+        this.keyRings = keyRings;
+    }
 	
-	public static VBox openSecretKeysTable(BorderPane pane) {
+	public VBox openSecretKeysTable(BorderPane pane) {
 		createVBox(pane);
 		return secretKeysVBox;
     }
     
-    private static String getNameFromUserID(String userID) {
+    private String getNameFromUserID(String userID) {
         return userID.substring(0, userID.indexOf(" <"));
     }
 
-    private static String getEmailFromUserID(String userID) {
+    private String getEmailFromUserID(String userID) {
         return userID.substring(userID.indexOf(" <") + 2, userID.indexOf(">"));
     }
 
-    private static Map<String, Integer> shownKeys = new HashMap<>();
+    private Map<String, Integer> shownKeys = new HashMap<>();
 	
-	private static List<KeyColumn> getKeyColumns() {
+	private List<KeyColumn> getKeyColumns() {
 		
 		List<KeyColumn> result = new ArrayList<KeyColumn>();
 		
-        Iterator<PGPSecretKeyRing> secKrIter = KeyRings.getSecretKeyRings().getKeyRings();
+        Iterator<PGPSecretKeyRing> secKrIter = keyRings.getSecretKeyRings().getKeyRings();
         
         while (secKrIter.hasNext()) {
         	PGPSecretKeyRing skr = secKrIter.next();
@@ -77,7 +83,7 @@ public class KeyTable {
             }
         }
         
-        Iterator<PGPPublicKeyRing> publicKeyIterator = KeyRings.getPublicKeyRings().getKeyRings();
+        Iterator<PGPPublicKeyRing> publicKeyIterator = keyRings.getPublicKeyRings().getKeyRings();
         while (publicKeyIterator.hasNext()) {
         	PGPPublicKeyRing skr = publicKeyIterator.next();
         	Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
@@ -104,7 +110,7 @@ public class KeyTable {
         return result;
 	}
 	
-	private static void createVBox(BorderPane pane) {
+	private void createVBox(BorderPane pane) {
 		secretKeysVBox = new VBox();
 		secretKeysVBox.setPadding(new Insets(10));
 		secretKeysVBox.setSpacing(8);
@@ -149,15 +155,17 @@ public class KeyTable {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
                                 if (keyColumn.getIsPublic()) {
                                 	try {
-										KeyRings.deletePublicKey(KeyRings.getPublicKeyRings().getPublicKeyRing(Long.valueOf(keyColumn.getOriginalKeyId())));
+										keyRings.deletePublicKey(keyColumn.getOriginalKeyId());
 										refreshTableRows(tableView);
 									} catch (NumberFormatException e) {
-										// TODO Auto-generated catch block
 										e.printStackTrace();
-									} catch (PGPException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} 
+									}
+                                }
+                                else {
+
+                                    Long keyId = keyColumn.getOriginalKeyId();
+                                    boolean result = keyRings.verifySecretKeyPassword(keyId, "test");
+
                                 }
                             });
                             setGraphic(btn);
@@ -181,7 +189,7 @@ public class KeyTable {
 
 	}
 	
-	private static void refreshTableRows(TableView tableView) {
+	private void refreshTableRows(TableView tableView) {
 		secretKeysVBox.getChildren().clear();
 		tableView.getItems().clear();
 		List<KeyColumn> keysList = getKeyColumns();

@@ -20,8 +20,18 @@ import javafx.event.EventHandler;
 public class App extends Application
 {
 
-	private KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
-	
+	private KeyRings keyRings;
+
+	private GenerateKey generateKey;
+	private KeyTable keyTable;
+
+	public App() {
+		this.keyRings = new KeyRings(new RSAKeyPairGenerator());
+
+		this.keyTable = new KeyTable(keyRings);
+		this.generateKey = new GenerateKey(keyRings, keyTable);
+	}
+
 	private void ChooseFileToEncryptClicked(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to encrypt");
@@ -58,7 +68,7 @@ public class App extends Application
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
-				root.setCenter(KeyTable.openSecretKeysTable(root));
+				root.setCenter(keyTable.openSecretKeysTable(root));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -100,7 +110,7 @@ public class App extends Application
 	}
 	
 	private void GenerateNewKeyPair(BorderPane pane) {
-		pane.setCenter(GenerateKey.openAddKeyMenu(pane));
+		pane.setCenter(generateKey.openAddKeyMenu(pane));
 	}
 	
     @Override
@@ -162,7 +172,7 @@ public class App extends Application
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(KeyTable.openSecretKeysTable(root));
+        root.setCenter(keyTable.openSecretKeysTable(root));
         stage.setScene(scene);  
         stage.show();  
     }

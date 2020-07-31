@@ -8,17 +8,12 @@ import java.util.stream.Collectors;
 
 import etf.openpgp.indeksi.crypto.EncryptionAlgorithms;
 import etf.openpgp.indeksi.crypto.KeyRings;
-import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -28,27 +23,25 @@ import org.bouncycastle.openpgp.PGPException;
 
 public class GenerateKey {
 	
-	private static VBox generateKeyVBox;
-	
-	private static String name, email, password;
-	private static EncryptionAlgorithms encryptionAlgorithm;
-	private static int keySize;
+	private VBox generateKeyVBox;
 
-	private static KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
+	private String name, email, password;
+	private EncryptionAlgorithms encryptionAlgorithm;
+	private int keySize;
+	private KeyRings keyRings;
+	private KeyTable keyTable;
+
+	public GenerateKey(KeyRings keyRings, KeyTable keyTable) {
+		this.keyRings = keyRings;
+		this.keyTable = keyTable;
+	}
 	
-	public static VBox openAddKeyMenu(BorderPane pane) {
+	public VBox openAddKeyMenu(BorderPane pane) {
 		createVBox(pane);
 		return generateKeyVBox;
 	}
 	
-	private static TextInputDialog openPasswordField(BorderPane pane) {
-		TextInputDialog dialog = new TextInputDialog("Choose password");
-		dialog.setTitle("Enter password");
-		
-		return dialog;
-	}
-	
-	private static void createVBox(BorderPane pane) {
+	private void createVBox(BorderPane pane) {
 		generateKeyVBox = new VBox();
 		generateKeyVBox.setPadding(new Insets(10));
 		generateKeyVBox.setSpacing(8);
@@ -114,12 +107,13 @@ public class GenerateKey {
 	            
 	            if(everythingOK) {
 	            	boolean passwordEntered = false;
-	            	TextInputDialog dialog = openPasswordField(pane);
+	            	PasswordDialog passwordDialog = new PasswordDialog("Enter password", "Enter password");
 	            	while(!passwordEntered) {
-	            		Optional<String> result = dialog.showAndWait();
+	            		Optional<String> result = passwordDialog.showAndWait();
 	            		if (result.isPresent()){
 	            			password = result.get();
 	            			if (password.length() > 0) {
+								System.out.println("password = " + password);
 	            				passwordEntered = true;
 	            			}
 	            		} else {
@@ -129,7 +123,7 @@ public class GenerateKey {
 	            	if (passwordEntered) {
 						try {
 							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), name + " <" + email + ">", password);
-							pane.setCenter(KeyTable.openSecretKeysTable(pane));
+							pane.setCenter(keyTable.openSecretKeysTable(pane));
 						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 							ex.printStackTrace();
 						}
@@ -141,7 +135,7 @@ public class GenerateKey {
 	    Button cancel = new Button("CANCEL");
 	    cancel.setOnAction(new EventHandler<ActionEvent>() {
 	        public void handle(ActionEvent e) {
-	        	pane.setCenter(KeyTable.openSecretKeysTable(pane));
+	        	pane.setCenter(keyTable.openSecretKeysTable(pane));
 	        }
 	    });
 	    generateKeyVBox.getChildren().add(cancel);
