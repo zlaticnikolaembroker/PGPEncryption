@@ -16,9 +16,6 @@ public class Main {
     public static KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
 
     public static void main(String[] args) {
-        keyRings.printSecretKeyRing();
-//        keyRings.exportPublicKeyRing();
-//        keyRings.exportSecretKeyRing();
         App.app();
     }
 

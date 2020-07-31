@@ -5,7 +5,7 @@ import java.io.*;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import etf.openpgp.indeksi.front.GenerateKey;
-import etf.openpgp.indeksi.front.SecretKeysTable;
+import etf.openpgp.indeksi.front.KeyTable;
 import javafx.application.Application;
 import javafx.scene.Scene;  
 import javafx.scene.control.*;  
@@ -48,7 +48,7 @@ public class App extends Application
 		}
 	}
 	
-	private void ChooseFileForKeyPairImporting(Stage stage) {
+	private void ChooseFileForKeyPairImporting(Stage stage, BorderPane root) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to import key pair");
 		
@@ -56,7 +56,10 @@ public class App extends Application
 		         new ExtensionFilter("Text Files", "*.asc"));
 		try {
 			InputStream fileIs = readFile(stage, fileChooser);
-			keyRings.importKeyPair(fileIs);
+			if (fileIs != null) {
+				keyRings.importKeyPair(fileIs);
+				root.setCenter(KeyTable.openSecretKeysTable(root));
+			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -64,6 +67,9 @@ public class App extends Application
 
 	private InputStream readFile(Stage stage, FileChooser fileChooser) throws FileNotFoundException {
 		File selectedFile = fileChooser.showOpenDialog(stage);
+		if (selectedFile == null) {
+			return null;
+		}
 		return new FileInputStream(selectedFile);
 	}
 
@@ -116,7 +122,7 @@ public class App extends Application
         keysMenu2.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				ChooseFileForKeyPairImporting(stage);
+				ChooseFileForKeyPairImporting(stage, root);
 			}
         });
         
@@ -156,7 +162,7 @@ public class App extends Application
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(SecretKeysTable.openSecretKeysTable(root));
+        root.setCenter(KeyTable.openSecretKeysTable(root));
         stage.setScene(scene);  
         stage.show();  
     }
