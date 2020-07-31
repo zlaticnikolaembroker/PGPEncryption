@@ -3,7 +3,11 @@ package etf.openpgp.indeksi.crypto;
 import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -31,13 +35,6 @@ public class KeyRings {
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
     
-    public static PGPPublicKeyRingCollection getPublicKeyRings() {
-    	return publicKeyRings;
-    }
-    
-    public static PGPSecretKeyRingCollection getSecretKeyRings() {
-    	return secretKeyRings;
-    }
 
     public KeyRings(KeyPairGenerator keyPairGenerator) {
         if (publicRingFile.exists()) {
@@ -220,18 +217,63 @@ public class KeyRings {
         }
     }
 
+    public boolean verifySecretKeyPassword(Long keyId, String password) {
+        PGPSecretKey secretKey = null;
+        try {
+            PGPSecretKeyRing secretKeyRing = secretKeyRings.getSecretKeyRing(keyId);
+            Iterator<PGPSecretKey> secretKeys = secretKeyRing.getSecretKeys();
+            while (secretKeys.hasNext()) {
+                PGPSecretKey tempKey = secretKeys.next();
+                if (tempKey.isSigningKey()) {
+                    secretKey = tempKey;
+                    break;
+                }
+            }
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+        if (secretKey != null) {
+            try {
+                PBESecretKeyDecryptor keyDecryptor = new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(password.toCharArray());
+                PGPPrivateKey privateKey = secretKey.extractPrivateKey(keyDecryptor);
+            } catch (PGPException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void deleteSecretKey(Long keyId) {
+        try {
+            PGPSecretKeyRing secretKeyRing = secretKeyRings.getSecretKeyRing(keyId);
+
+            secretKeyRings = secretKeyRings.removeSecretKeyRing(secretKeyRings, secretKeyRing);
+            saveSecretKeyRing();
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deletePublicKey(Long keyId) {
+        try {
+            PGPPublicKeyRing publicKeyRing = publicKeyRings.getPublicKeyRing(keyId);
+            publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
+            savePublicKeyRing();
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public PGPPublicKeyRingCollection getPublicKeyRings() {
+    	return publicKeyRings;
+    }
+
+    public PGPSecretKeyRingCollection getSecretKeyRings() {
+    	return secretKeyRings;
+    }
+
     public void setKeyPairGenerator(KeyPairGenerator keyPairGenerator) {
         this.keyPairGenerator = keyPairGenerator;
     }
-    
-    public static void deleteSecretKey(PGPSecretKeyRing secretKeyRing) {
-    	secretKeyRings = secretKeyRings.removeSecretKeyRing(secretKeyRings, secretKeyRing);
-    	saveSecretKeyRing();
-    }
-    
-    public static void deletePublicKey(PGPPublicKeyRing publicKeyRing) {
-    	publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
-    	savePublicKeyRing();
-    }
-
 }

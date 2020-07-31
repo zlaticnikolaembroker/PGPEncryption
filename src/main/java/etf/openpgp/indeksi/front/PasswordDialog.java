@@ -10,6 +10,10 @@ import javafx.scene.layout.HBox;
 
 public class PasswordDialog extends Dialog<String> {
 
+    public PasswordDialog() {
+        this("Enter password", "Enter password");
+    }
+
     public PasswordDialog(String title, String labelText) {
         setTitle(title);
         PasswordField passwordField = new PasswordField();

@@ -1,10 +1,6 @@
 package etf.openpgp.indeksi.front;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
@@ -162,9 +158,19 @@ public class KeyTable {
 									}
                                 }
                                 else {
-
                                     Long keyId = keyColumn.getOriginalKeyId();
-                                    boolean result = keyRings.verifySecretKeyPassword(keyId, "test");
+                                    PasswordDialog passwordDialog = new PasswordDialog();
+                                    Optional<String> passwordOptional = passwordDialog.showAndWait();
+                                    if (passwordOptional.isPresent()) {
+                                        String password = passwordOptional.get();
+                                        boolean result = keyRings.verifySecretKeyPassword(keyId, password);
+                                        if (result) {
+                                            // verifikacija lozinke je uspesna, brisemo kljuc
+                                            keyRings.deleteSecretKey(keyId);
+                                            keyRings.deletePublicKey(keyId);
+                                            refreshTableRows(tableView);
+                                        }
+                                    }
 
                                 }
                             });
