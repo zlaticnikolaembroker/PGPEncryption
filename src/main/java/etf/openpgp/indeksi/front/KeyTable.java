@@ -1,5 +1,8 @@
 package etf.openpgp.indeksi.front;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import javafx.scene.control.*;
@@ -18,6 +21,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class KeyTable {
@@ -187,7 +192,7 @@ public class KeyTable {
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                 Boolean expotConfirmed = confirmationOptional.get();
                                 if (expotConfirmed) {
-                                    System.out.println("Export confirmed");
+                                	
                                 }
                             });
                             setGraphic(btn);
@@ -212,16 +217,19 @@ public class KeyTable {
                         if (empty) {
                             setGraphic(null);
                         } else {
-                            btn.setOnAction(event -> {
-                                KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "export secret");
-                                Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
-                                Boolean exportSecreatConfirmed = confirmationOptional.get();
-                                if (exportSecreatConfirmed) {
-                                    System.out.println("Export secret confirmed");
+                            KeyColumn keyColumn = getTableView().getItems().get(getIndex());
+                                if (!keyColumn.getIsPublic()) {
+                                    btn.setOnAction(event -> {
+                                        Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "export secret");
+                                        Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
+                                        Boolean exportSecreatConfirmed = confirmationOptional.get();
+                                        if (exportSecreatConfirmed) {
+                                            System.out.println("Export secret confirmed");
+                                        }
+                                    });
+                                    setGraphic(btn);
                                 }
-                            });
-                            setGraphic(btn);
+                            
                         }
                         setText(null);
                     }
@@ -292,6 +300,32 @@ public class KeyTable {
 
         return confirmDialog;
     }
+    
+    private void saveTextToFile(String content, File file) {
+        try {
+            PrintWriter writer;
+            writer = new PrintWriter(file);
+            writer.println(content);
+            writer.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+	
+	private void ExportKeyPair(String sampleText, Stage stage) {
+		FileChooser fileChooser = new FileChooser();
+ 
+        //Set extension filter for text files
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("ASC files (*.asc)", "*.asc");
+        fileChooser.getExtensionFilters().add(extFilter);
+ 
+        //Show save file dialog
+        File file = fileChooser.showSaveDialog(stage);
+ 
+        if (file != null) {
+            saveTextToFile(sampleText, file);
+        }
+	}
 	
 	private void refreshTableRows(TableView tableView) {
 		secretKeysVBox.getChildren().clear();
