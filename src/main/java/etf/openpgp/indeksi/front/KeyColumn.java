@@ -44,7 +44,7 @@ public class KeyColumn {
 	}
 	
 	public String getKeyId() {
-		return keyId.toUpperCase().substring(0,4) + " " + keyId.toUpperCase().substring(4, 8) + " " + keyId.toUpperCase().substring(8, 12) + " " + keyId.toUpperCase().substring(12);
+		return keyId;
 	}
 	
 	public boolean getIsPublic() {
