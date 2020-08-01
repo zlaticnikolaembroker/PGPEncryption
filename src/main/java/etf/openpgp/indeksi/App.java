@@ -36,17 +36,8 @@ public class App extends Application
 	}
 
 	private void ChooseFileToEncryptClicked(Stage stage, BorderPane root) {
-		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open file to encrypt/sign");
-		
-		fileChooser.getExtensionFilters().addAll(
-		         new ExtensionFilter("Text Files", "*.txt"));
-		try {
-			InputStream fileIs = readFile(stage, fileChooser);
-			root.setCenter(signAndEncrypt.openSignAndEncrypt(root));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		String filePath = chooseFile(stage);
+		root.setCenter(signAndEncrypt.openSignAndEncrypt(root, stage, keyTable, filePath, keyRings));
 	}
 	
 	private void ChooseFileToDecryptClicked(Stage stage) {
@@ -91,6 +82,22 @@ public class App extends Application
 	
 	private void GenerateNewKeyPair(BorderPane pane, Stage stage) {
 		pane.setCenter(generateKey.openAddKeyMenu(pane, stage));
+	}
+
+	private String chooseFile(Stage stage) {
+		FileChooser fileChooser = new FileChooser();
+
+		//Set extension filter for text files
+		FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("All files (*)", "*.*");
+		fileChooser.getExtensionFilters().add(extFilter);
+
+		//Show save file dialog
+		File file = fileChooser.showOpenDialog(stage);
+
+		if (file != null) {
+			return file.getPath();
+		}
+		return null;
 	}
 	
     @Override

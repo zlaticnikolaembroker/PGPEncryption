@@ -5,10 +5,8 @@ import etf.openpgp.indeksi.crypto.models.Key;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
-import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
-import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +30,8 @@ public class KeyRings {
 
     private KeyPairGenerator keyPairGenerator;
 
-    private static File publicRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
-    private static File secretRingFile = new File(SECRET_KEYRING_FILE_LOCATION);
+    private static final File publicRingFile = new File(PUBLIC_KEYRING_FILE_LOCATION);
+    private static final File secretRingFile = new File(SECRET_KEYRING_FILE_LOCATION);
 
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
@@ -112,7 +110,7 @@ public class KeyRings {
     public void importKeyPair(InputStream is) {
         try {
             PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(PGPUtil.getDecoderStream(is), new BcKeyFingerprintCalculator());
-            Object o = null;
+            Object o;
             while ((o = pgpObjectFactory.nextObject()) !=null) {
                 if (o instanceof PGPSecretKeyRing) {
                     importSecretKeyRing((PGPSecretKeyRing) o);
@@ -352,5 +350,13 @@ public class KeyRings {
 
     public void setKeyPairGenerator(KeyPairGenerator keyPairGenerator) {
         this.keyPairGenerator = keyPairGenerator;
+    }
+
+    public PGPPublicKey getEncryptionKey(String userId, Long keyId) throws PGPException {
+        Iterator<PGPPublicKeyRing> keyRings = publicKeyRings.getKeyRings(userId);
+        PGPPublicKey publicKey = null;
+
+        while (keyRings.hasNext() && (publicKey = keyRings.next().getPublicKey(keyId)) == null);
+        return publicKey;
     }
 }
