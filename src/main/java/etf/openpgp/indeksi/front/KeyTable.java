@@ -195,6 +195,9 @@ public class KeyTable {
                                 Boolean exportConfirmed = confirmationOptional.get();
                                 if (exportConfirmed) {
                                     String fileName = chooseFileName(stage);
+                                    if (fileName.substring(fileName.length() - 4) != ".asc") {
+                                    	fileName += ".asc";
+                                    }
                                     
                                     if (fileName != null){
                                     	keyRings.exportPublicKeyRing(fileName, keyColumn.getUserId());   
@@ -318,7 +321,7 @@ public class KeyTable {
         File file = fileChooser.showSaveDialog(stage);
  
         if (file != null) {
-            return file.getName();
+            return file.getPath();
         }
         return null;
 	}
