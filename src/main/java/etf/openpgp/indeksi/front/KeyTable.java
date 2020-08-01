@@ -129,9 +129,13 @@ public class KeyTable {
 		TableColumn<String, KeyColumn> column4 = new TableColumn<>("Is Public");
 		column4.setCellValueFactory(new PropertyValueFactory<>("isPublic"));
 		
-		TableColumn<KeyColumn, Void> colBtn = new TableColumn<>("Delete");
+		TableColumn<KeyColumn, Void> deleteBtn = new TableColumn<>("Delete");
+		
+		TableColumn<KeyColumn, Void> exportBtn = new TableColumn<>("Export");
+		
+		TableColumn<KeyColumn, Void> exportSecretBtn = new TableColumn<>("Export secret");
 
-        Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> cellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
+        Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> deleteCellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
             @Override
             public TableCell<KeyColumn, Void> call(final TableColumn<KeyColumn, Void> param) {
                 final TableCell<KeyColumn, Void> cell = new TableCell<KeyColumn, Void>() {
@@ -163,14 +167,80 @@ public class KeyTable {
                 return cell;
             }
         };
+        
+        Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> exportCellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
+            @Override
+            public TableCell<KeyColumn, Void> call(final TableColumn<KeyColumn, Void> param) {
+                final TableCell<KeyColumn, Void> cell = new TableCell<KeyColumn, Void>() {
 
-        colBtn.setCellFactory(cellFactory);
+                    private final Button btn = new Button("Export");
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            btn.setOnAction(event -> {
+                                KeyColumn keyColumn = getTableView().getItems().get(getIndex());
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
+                                Boolean expotConfirmed = confirmationOptional.get();
+                                if (expotConfirmed) {
+                                    System.out.println("Export confirmed");
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                        setText(null);
+                    }
+                };
+                return cell;
+            }
+        };
+        
+        Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>> exportSecretCellFactory = new Callback<TableColumn<KeyColumn, Void>, TableCell<KeyColumn, Void>>() {
+            @Override
+            public TableCell<KeyColumn, Void> call(final TableColumn<KeyColumn, Void> param) {
+                final TableCell<KeyColumn, Void> cell = new TableCell<KeyColumn, Void>() {
+
+                    private final Button btn = new Button("Export Secret");
+
+                    @Override
+                    public void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            btn.setOnAction(event -> {
+                                KeyColumn keyColumn = getTableView().getItems().get(getIndex());
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
+                                Boolean exportSecreatConfirmed = confirmationOptional.get();
+                                if (exportSecreatConfirmed) {
+                                    System.out.println("Export secret confirmed");
+                                }
+                            });
+                            setGraphic(btn);
+                        }
+                        setText(null);
+                    }
+                };
+                return cell;
+            }
+        };
+
+        deleteBtn.setCellFactory(deleteCellFactory);
+        exportBtn.setCellFactory(exportCellFactory);
+        exportSecretBtn.setCellFactory(exportSecretCellFactory);
 
 		tableView.getColumns().add(column1);
 		tableView.getColumns().add(column2);
 		tableView.getColumns().add(column3);
 		tableView.getColumns().add(column4);
-		tableView.getColumns().add(colBtn);
+		tableView.getColumns().add(deleteBtn);
+		tableView.getColumns().add(exportBtn);
+		tableView.getColumns().add(exportSecretBtn);
 		
 		refreshTableRows(tableView);
 
