@@ -30,13 +30,15 @@ public class KeyTable {
 	private VBox secretKeysVBox;
 
 	private KeyRings keyRings;
+	private Stage stage;
 
     public KeyTable(KeyRings keyRings) {
         this.keyRings = keyRings;
     }
 	
-	public VBox openSecretKeysTable(BorderPane pane) {
-		createVBox(pane);
+	public VBox openSecretKeysTable(BorderPane pane, Stage stage) {
+		createVBox(pane, stage);
+		this.stage = stage;
 		return secretKeysVBox;
     }
     
@@ -109,7 +111,7 @@ public class KeyTable {
         return result;
 	}
 	
-	private void createVBox(BorderPane pane) {
+	private void createVBox(BorderPane pane, Stage stage) {
 		secretKeysVBox = new VBox();
 		secretKeysVBox.setPadding(new Insets(10));
 		secretKeysVBox.setSpacing(8);
@@ -190,9 +192,13 @@ public class KeyTable {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
                                 Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "export");
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
-                                Boolean expotConfirmed = confirmationOptional.get();
-                                if (expotConfirmed) {
-                                	
+                                Boolean exportConfirmed = confirmationOptional.get();
+                                if (exportConfirmed) {
+                                    String fileName = chooseFileName(stage);
+                                    
+                                    if (fileName != null){
+                                    	keyRings.exportPublicKeyRing(fileName, keyColumn.getUserId());   
+                                    }
                                 }
                             });
                             setGraphic(btn);
@@ -300,19 +306,8 @@ public class KeyTable {
 
         return confirmDialog;
     }
-    
-    private void saveTextToFile(String content, File file) {
-        try {
-            PrintWriter writer;
-            writer = new PrintWriter(file);
-            writer.println(content);
-            writer.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 	
-	private void ExportKeyPair(String sampleText, Stage stage) {
+	private String chooseFileName(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
  
         //Set extension filter for text files
@@ -323,8 +318,9 @@ public class KeyTable {
         File file = fileChooser.showSaveDialog(stage);
  
         if (file != null) {
-            saveTextToFile(sampleText, file);
+            return file.getName();
         }
+        return null;
 	}
 	
 	private void refreshTableRows(TableView tableView) {

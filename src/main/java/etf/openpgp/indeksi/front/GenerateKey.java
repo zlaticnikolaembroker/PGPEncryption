@@ -19,6 +19,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
 import org.bouncycastle.openpgp.PGPException;
 
 public class GenerateKey {
@@ -36,12 +38,12 @@ public class GenerateKey {
 		this.keyTable = keyTable;
 	}
 	
-	public VBox openAddKeyMenu(BorderPane pane) {
-		createVBox(pane);
+	public VBox openAddKeyMenu(BorderPane pane, Stage stage) {
+		createVBox(pane, stage);
 		return generateKeyVBox;
 	}
 	
-	private void createVBox(BorderPane pane) {
+	private void createVBox(BorderPane pane, Stage stage) {
 		generateKeyVBox = new VBox();
 		generateKeyVBox.setPadding(new Insets(10));
 		generateKeyVBox.setSpacing(8);
@@ -123,7 +125,7 @@ public class GenerateKey {
 	            	if (passwordEntered) {
 						try {
 							keyRings.generateNewKeyPair(keySize, keySize, encryptionAlgorithm.getValue(), name + " <" + email + ">", password);
-							pane.setCenter(keyTable.openSecretKeysTable(pane));
+							pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
 						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
 							ex.printStackTrace();
 						}
@@ -135,7 +137,7 @@ public class GenerateKey {
 	    Button cancel = new Button("CANCEL");
 	    cancel.setOnAction(new EventHandler<ActionEvent>() {
 	        public void handle(ActionEvent e) {
-	        	pane.setCenter(keyTable.openSecretKeysTable(pane));
+	        	pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
 	        }
 	    });
 	    generateKeyVBox.getChildren().add(cancel);

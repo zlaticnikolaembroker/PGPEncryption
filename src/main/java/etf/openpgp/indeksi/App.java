@@ -72,7 +72,7 @@ public class App extends Application
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
-				pane.setCenter(keyTable.openSecretKeysTable(pane));
+				pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -89,8 +89,8 @@ public class App extends Application
 
 	
 	
-	private void GenerateNewKeyPair(BorderPane pane) {
-		pane.setCenter(generateKey.openAddKeyMenu(pane));
+	private void GenerateNewKeyPair(BorderPane pane, Stage stage) {
+		pane.setCenter(generateKey.openAddKeyMenu(pane, stage));
 	}
 	
     @Override
@@ -104,7 +104,7 @@ public class App extends Application
         keysMenu1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				GenerateNewKeyPair(root);
+				GenerateNewKeyPair(root, stage);
 			}
 		});
         
@@ -143,7 +143,7 @@ public class App extends Application
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(keyTable.openSecretKeysTable(root));
+        root.setCenter(keyTable.openSecretKeysTable(root, stage));
         stage.setScene(scene);  
         stage.show();  
     }
