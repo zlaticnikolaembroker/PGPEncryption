@@ -239,7 +239,7 @@ public class KeyTable {
                                                 if (fileName.substring(fileName.length() - 4) != ".asc") {
                                                     fileName += ".asc";
                                                 }
-                                                if (PasswordVerificator.verify(keyColumn.getOriginalKeyId(), keyRings)) {
+                                                if (PasswordVerificator.verify(keyColumn.getOriginalKeyId(), keyRings) != null) {
                                                     // verifikacija lozinke je uspesna, exportujemo kljuc
                                                     keyRings.exportSecretKeyRing(fileName, keyColumn.getUserId());
                                                 }
@@ -283,7 +283,7 @@ public class KeyTable {
                 e.printStackTrace();
             }
         } else {
-            if (PasswordVerificator.verify(keyId, keyRings)) {
+            if (PasswordVerificator.verify(keyId, keyRings) != null) {
                 // verifikacija lozinke je uspesna, brisemo kljuc
                 keyRings.deleteSecretKey(keyId);
                 keyDeleted = true;
