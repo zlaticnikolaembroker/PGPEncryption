@@ -201,7 +201,6 @@ public class KeyTable {
             if (passwordVerified) {
                 // verifikacija lozinke je uspesna, brisemo kljuc
                 keyRings.deleteSecretKey(keyId);
-                keyRings.deletePublicKey(keyId);
                 keyDeleted = true;
             }
         }
