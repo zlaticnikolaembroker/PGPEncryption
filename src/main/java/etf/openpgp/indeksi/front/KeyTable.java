@@ -49,10 +49,9 @@ public class KeyTable {
     private String getEmailFromUserID(String userID) {
         return userID.substring(userID.indexOf(" <") + 2, userID.indexOf(">"));
     }
-
-    private Map<String, Integer> shownKeys = new HashMap<>();
 	
 	private List<KeyColumn> getKeyColumns() {
+		Map<String, Integer> shownKeys = new HashMap<>();
 		
 		List<KeyColumn> result = new ArrayList<KeyColumn>();
 		

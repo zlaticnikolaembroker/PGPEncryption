@@ -57,8 +57,6 @@ public class App extends Application
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to import key pair");
 		
-		fileChooser.getExtensionFilters().addAll(
-		         new ExtensionFilter("Text Files", "*.asc"));
 		try {
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
