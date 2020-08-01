@@ -53,7 +53,7 @@ public class KeyTable {
 	private List<KeyColumn> getKeyColumns() {
 		Map<String, Integer> shownKeys = new HashMap<>();
 		
-		List<KeyColumn> result = new ArrayList<KeyColumn>();
+		List<KeyColumn> result = new ArrayList<>();
 		
         Iterator<PGPSecretKeyRing> secKrIter = keyRings.getSecretKeyRings().getKeyRings();
         

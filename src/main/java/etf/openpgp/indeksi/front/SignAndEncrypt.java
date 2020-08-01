@@ -99,7 +99,7 @@ public class SignAndEncrypt {
                 String encryptedFilePath = filePath.concat(".asc");
                 OutputStream out = new FileOutputStream(encryptedFilePath);
                 encryptor.encryptFile(out, filePath, recipientList, signingKey, "test", true);
-            } catch (IOException | PGPException exception) {
+            } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
                 exception.printStackTrace();
             }
         });
@@ -110,7 +110,7 @@ public class SignAndEncrypt {
                 encryptionKeysTable.getSelectionModel().getSelectedItems(), signCheckBox.selectedProperty()));
 
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setOnAction(e -> pane.setCenter(keyTable.openSecretKeysTable(stage)));
+        cancelBtn.setOnAction(e -> pane.setCenter(keyTable.openSecretKeysTable(pane, stage)));
 
         signAndEncryptVBox.getChildren().addAll(encryptBtn, cancelBtn);
     }
