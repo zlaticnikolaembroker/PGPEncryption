@@ -150,7 +150,7 @@ public class KeyTable {
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "delete");
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                 Boolean deletionConfirmed = confirmationOptional.get();
                                 if (deletionConfirmed) {
@@ -183,7 +183,7 @@ public class KeyTable {
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "export");
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                 Boolean expotConfirmed = confirmationOptional.get();
                                 if (expotConfirmed) {
@@ -214,7 +214,7 @@ public class KeyTable {
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail(), "export secret");
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                 Boolean exportSecreatConfirmed = confirmationOptional.get();
                                 if (exportSecreatConfirmed) {
@@ -277,10 +277,10 @@ public class KeyTable {
         return keyDeleted;
     }
 
-    private Dialog showConfirmDialog(String name, String email) {
+    private Dialog showConfirmDialog(String name, String email, String message) {
         Dialog<Boolean> confirmDialog = new Dialog();
         confirmDialog.setTitle("Are you sure?");
-        Label label = new Label("Are you sure you want to delete key " + name + "<" + email + ">");
+        Label label = new Label("Are you sure you want to " + message + " key " + name + "<" + email + ">");
         HBox content = new HBox();
         content.getChildren().add(label);
         confirmDialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
