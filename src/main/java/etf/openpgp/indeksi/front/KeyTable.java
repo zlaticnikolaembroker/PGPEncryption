@@ -194,12 +194,12 @@ public class KeyTable {
                                 Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                 Boolean exportConfirmed = confirmationOptional.get();
                                 if (exportConfirmed) {
-                                    String fileName = chooseFileName(stage);
-                                    if (fileName.substring(fileName.length() - 4) != ".asc") {
-                                    	fileName += ".asc";
-                                    }
+                                    String fileName = chooseFileName(stage); 
                                     
                                     if (fileName != null){
+                                        if (fileName.substring(fileName.length() - 4) != ".asc") {
+                                            fileName += ".asc";
+                                        }
                                     	keyRings.exportPublicKeyRing(fileName, keyColumn.getUserId());   
                                     }
                                 }
@@ -233,7 +233,32 @@ public class KeyTable {
                                         Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
                                         Boolean exportSecreatConfirmed = confirmationOptional.get();
                                         if (exportSecreatConfirmed) {
-                                            System.out.println("Export secret confirmed");
+                                            String fileName = chooseFileName(stage);
+                                           
+                                            
+                                            if (fileName != null){
+                                                if (fileName.substring(fileName.length() - 4) != ".asc") {
+                                                    fileName += ".asc";
+                                                }
+                                                int passwordAttemptCounter = 0;
+                                                boolean passwordVerified = false;
+                                                PasswordDialog passwordDialog = new PasswordDialog();
+
+                                                while (!passwordVerified && passwordAttemptCounter < 3) {
+                                                    Optional<String> passwordOptional = passwordDialog.showAndWait();
+                                                    if (passwordOptional.isPresent()) {
+                                                        String password = passwordOptional.get();
+                                                        Long keyId = keyColumn.getOriginalKeyId();
+
+                                                        passwordVerified = keyRings.verifySecretKeyPassword(keyId, password);
+                                                    }
+                                                    passwordAttemptCounter++;
+                                                }
+                                                if (passwordVerified) {
+                                                    // verifikacija lozinke je uspesna, exportujemo kljuc
+                                                    keyRings.exportSecretKeyRing(fileName, keyColumn.getUserId());
+                                                }
+                                            }
                                         }
                                     });
                                     setGraphic(btn);

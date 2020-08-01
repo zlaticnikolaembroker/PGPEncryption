@@ -136,9 +136,9 @@ public class KeyRings {
         saveSecretKeyRing();
     }
 
-    public void exportSecretKeyRing() {
-        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("sec.asc"))){
-            Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings("proka@test.com");
+    public void exportSecretKeyRing(String fileName, String userId) {
+        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream(fileName))){
+            Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings(userId);
             while (keyRingsIter.hasNext()) {
                 PGPSecretKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
