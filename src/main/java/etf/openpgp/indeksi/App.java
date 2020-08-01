@@ -6,6 +6,7 @@ import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import etf.openpgp.indeksi.front.GenerateKey;
 import etf.openpgp.indeksi.front.KeyTable;
+import etf.openpgp.indeksi.front.SignAndEncrypt;
 import javafx.application.Application;
 import javafx.scene.Scene;  
 import javafx.scene.control.*;  
@@ -20,16 +21,29 @@ import javafx.event.EventHandler;
 public class App extends Application
 {
 
-	private KeyRings keyRings = new KeyRings(new RSAKeyPairGenerator());
-	
-	private void ChooseFileToEncryptClicked(Stage stage) {
+	private KeyRings keyRings;
+
+	private GenerateKey generateKey;
+	private SignAndEncrypt signAndEncrypt;
+	private KeyTable keyTable;
+
+	public App() {
+		this.keyRings = new KeyRings(new RSAKeyPairGenerator());
+
+		this.keyTable = new KeyTable(keyRings);
+		this.generateKey = new GenerateKey(keyRings, keyTable);
+		this.signAndEncrypt = new SignAndEncrypt(keyRings);
+	}
+
+	private void ChooseFileToEncryptClicked(Stage stage, BorderPane root) {
 		FileChooser fileChooser = new FileChooser();
-		fileChooser.setTitle("Open file to encrypt");
+		fileChooser.setTitle("Open file to encrypt/sign");
 		
 		fileChooser.getExtensionFilters().addAll(
 		         new ExtensionFilter("Text Files", "*.txt"));
 		try {
-			readFile(stage, fileChooser);
+			InputStream fileIs = readFile(stage, fileChooser);
+			root.setCenter(signAndEncrypt.openSignAndEncrypt(root));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -48,7 +62,7 @@ public class App extends Application
 		}
 	}
 	
-	private void ChooseFileForKeyPairImporting(Stage stage, BorderPane root) {
+	private void ChooseFileForKeyPairImporting(Stage stage, BorderPane pane) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to import key pair");
 		
@@ -58,7 +72,7 @@ public class App extends Application
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
-				root.setCenter(KeyTable.openSecretKeysTable(root));
+				pane.setCenter(keyTable.openSecretKeysTable(pane));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -100,7 +114,7 @@ public class App extends Application
 	}
 	
 	private void GenerateNewKeyPair(BorderPane pane) {
-		pane.setCenter(GenerateKey.openAddKeyMenu(pane));
+		pane.setCenter(generateKey.openAddKeyMenu(pane));
 	}
 	
     @Override
@@ -135,12 +149,12 @@ public class App extends Application
 			}
 		});
         
-        Menu EncryptMenu=new Menu("Encrypt");
+        Menu EncryptMenu=new Menu("Encrypt/Sign");
         MenuItem encryptMenuItem1 = new MenuItem("Choose file");
         encryptMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				ChooseFileToEncryptClicked(stage);
+				ChooseFileToEncryptClicked(stage, root);
 				
 			}
 		});
@@ -162,7 +176,7 @@ public class App extends Application
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(KeyTable.openSecretKeysTable(root));
+        root.setCenter(keyTable.openSecretKeysTable(root));
         stage.setScene(scene);  
         stage.show();  
     }

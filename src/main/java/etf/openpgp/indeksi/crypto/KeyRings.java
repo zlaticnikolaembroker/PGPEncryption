@@ -1,9 +1,14 @@
 package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
+import etf.openpgp.indeksi.crypto.models.Key;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +16,8 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Klasa zaduzena za rad sa keyringovima. Sadrzi metode za generisanje novog para kljuceva, uvoz postojeceg kljuca
@@ -31,13 +38,6 @@ public class KeyRings {
     private static PGPPublicKeyRingCollection publicKeyRings;
     private static PGPSecretKeyRingCollection secretKeyRings;
     
-    public static PGPPublicKeyRingCollection getPublicKeyRings() {
-    	return publicKeyRings;
-    }
-    
-    public static PGPSecretKeyRingCollection getSecretKeyRings() {
-    	return secretKeyRings;
-    }
 
     public KeyRings(KeyPairGenerator keyPairGenerator) {
         if (publicRingFile.exists()) {
@@ -182,11 +182,30 @@ public class KeyRings {
         }
     }
 
-    public void printSecretKeyRing() {
-        Iterator<PGPSecretKeyRing> secKrIter = secretKeyRings.getKeyRings();
-        while (secKrIter.hasNext()) {
-            PGPSecretKeyRing skr = secKrIter.next();
-            printSecretKeyRingInfo(skr);
+    public void printPublicKeyRings() {
+        Iterator<PGPPublicKeyRing> keyRings = publicKeyRings.getKeyRings();
+        int keyRingCounter = 1;
+        while (keyRings.hasNext()) {
+            System.out.println("keyRing number " + keyRingCounter++);
+            printPublicKeyRingInfo(keyRings.next());
+        }
+    }
+
+    public void printPrivateKeyRings() {
+        Iterator<PGPSecretKeyRing> keyRings = secretKeyRings.getKeyRings();
+        while (keyRings.hasNext()) {
+            printSecretKeyRingInfo(keyRings.next());
+        }
+    }
+
+    private void printPublicKeyRingInfo(PGPPublicKeyRing pkr) {
+        Iterator<PGPPublicKey> publicKeys = pkr.getPublicKeys();
+        while (publicKeys.hasNext()) {
+            PGPPublicKey publicKey = publicKeys.next();
+            System.out.println("key id: " + publicKey.getKeyID());
+            System.out.println("isEncryptionKey: " + publicKey.isEncryptionKey());
+            System.out.println("userIds: ");
+            publicKey.getUserIDs().forEachRemaining(System.out::println);
         }
     }
 
@@ -220,18 +239,116 @@ public class KeyRings {
         }
     }
 
+    public boolean verifySecretKeyPassword(Long keyId, String password) {
+        PGPSecretKey secretKey = null;
+        try {
+            PGPSecretKeyRing secretKeyRing = secretKeyRings.getSecretKeyRing(keyId);
+            Iterator<PGPSecretKey> secretKeys = secretKeyRing.getSecretKeys();
+            while (secretKeys.hasNext()) {
+                PGPSecretKey tempKey = secretKeys.next();
+                if (tempKey.isSigningKey()) {
+                    secretKey = tempKey;
+                    break;
+                }
+            }
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+        if (secretKey != null) {
+            try {
+                PBESecretKeyDecryptor keyDecryptor = new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(password.toCharArray());
+                PGPPrivateKey privateKey = secretKey.extractPrivateKey(keyDecryptor);
+            } catch (PGPException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void deleteSecretKey(Long keyId) {
+        try {
+            PGPSecretKeyRing secretKeyRing = secretKeyRings.getSecretKeyRing(keyId);
+            // brisanje tajnog kljuca podrazumeva i brisanje svih njemu pridruzenih javnih kljuceva
+            Iterator<PGPPublicKey> publicKeys = secretKeyRing.getPublicKeys();
+            while (publicKeys.hasNext()) {
+                PGPPublicKey publicKey = publicKeys.next();
+                PGPPublicKeyRing publicKeyRing = null;
+                if ((publicKeyRing = publicKeyRings.getPublicKeyRing(publicKey.getKeyID())) != null) {
+                    publicKeyRings = PGPPublicKeyRingCollection.removePublicKeyRing(publicKeyRings, publicKeyRing);
+                }
+            }
+
+            secretKeyRings = secretKeyRings.removeSecretKeyRing(secretKeyRings, secretKeyRing);
+            saveSecretKeyRing();
+            savePublicKeyRing();
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deletePublicKey(Long keyId) {
+        try {
+            PGPPublicKeyRing publicKeyRing = publicKeyRings.getPublicKeyRing(keyId);
+            publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
+            savePublicKeyRing();
+        } catch (PGPException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Key> getSigningKeys() {
+        List<Key> signingKeys = new LinkedList<>();
+        Iterator<PGPSecretKeyRing> keyRings = secretKeyRings.getKeyRings();
+
+        while (keyRings.hasNext()) {
+            PGPSecretKeyRing keyRing = keyRings.next();
+            Iterator<PGPSecretKey> secretKeys = keyRing.getSecretKeys();
+            while (secretKeys.hasNext()) {
+                PGPSecretKey secretKey = secretKeys.next();
+                if (secretKey.isSigningKey()) {
+                    Iterator<String> userIDs = secretKey.getUserIDs();
+                    if (userIDs.hasNext()) {
+                        signingKeys.add(new Key(secretKey.getKeyID(), userIDs.next()));
+                    }
+                }
+            }
+        }
+
+        return signingKeys;
+    }
+
+    public List<Key> getEncryptionKeys() {
+        List<Key> encryptionKeys = new LinkedList<>();
+        Iterator<PGPPublicKeyRing> keyRings = publicKeyRings.getKeyRings();
+
+        while (keyRings.hasNext()) {
+            PGPPublicKeyRing keyRing = keyRings.next();
+            Iterator<PGPPublicKey> publicKeys = keyRing.getPublicKeys();
+            String userId = null;
+            Long keyId = null;
+            while (publicKeys.hasNext()) {
+                PGPPublicKey publicKey = publicKeys.next();
+                if (publicKey.getUserIDs().hasNext()) {
+                    userId = (String) publicKey.getUserIDs().next();
+                }
+                if (publicKey.isEncryptionKey()) {
+                    keyId = publicKey.getKeyID();
+                }
+            }
+            encryptionKeys.add(new Key(keyId, userId));
+        }
+        return encryptionKeys;
+    }
+
+    public PGPPublicKeyRingCollection getPublicKeyRings() {
+    	return publicKeyRings;
+    }
+
+    public PGPSecretKeyRingCollection getSecretKeyRings() {
+    	return secretKeyRings;
+    }
+
     public void setKeyPairGenerator(KeyPairGenerator keyPairGenerator) {
         this.keyPairGenerator = keyPairGenerator;
     }
-    
-    public static void deleteSecretKey(PGPSecretKeyRing secretKeyRing) {
-    	secretKeyRings = secretKeyRings.removeSecretKeyRing(secretKeyRings, secretKeyRing);
-    	saveSecretKeyRing();
-    }
-    
-    public static void deletePublicKey(PGPPublicKeyRing publicKeyRing) {
-    	publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
-    	savePublicKeyRing();
-    }
-
 }

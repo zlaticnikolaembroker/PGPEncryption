@@ -1,11 +1,9 @@
 package etf.openpgp.indeksi.front;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
@@ -14,42 +12,44 @@ import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import etf.openpgp.indeksi.crypto.KeyRings;
 import javafx.geometry.Insets;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableCell;
 import javafx.util.Callback;
 
 public class KeyTable {
 	
-	private static VBox secretKeysVBox;
+	private VBox secretKeysVBox;
+
+	private KeyRings keyRings;
+
+    public KeyTable(KeyRings keyRings) {
+        this.keyRings = keyRings;
+    }
 	
-	public static VBox openSecretKeysTable(BorderPane pane) {
+	public VBox openSecretKeysTable(BorderPane pane) {
 		createVBox(pane);
 		return secretKeysVBox;
     }
     
-    private static String getNameFromUserID(String userID) {
+    private String getNameFromUserID(String userID) {
         return userID.substring(0, userID.indexOf(" <"));
     }
 
-    private static String getEmailFromUserID(String userID) {
+    private String getEmailFromUserID(String userID) {
         return userID.substring(userID.indexOf(" <") + 2, userID.indexOf(">"));
     }
 
-    private static Map<String, Integer> shownKeys = new HashMap<>();
+    private Map<String, Integer> shownKeys = new HashMap<>();
 	
-	private static List<KeyColumn> getKeyColumns() {
+	private List<KeyColumn> getKeyColumns() {
 		
 		List<KeyColumn> result = new ArrayList<KeyColumn>();
 		
-        Iterator<PGPSecretKeyRing> secKrIter = KeyRings.getSecretKeyRings().getKeyRings();
+        Iterator<PGPSecretKeyRing> secKrIter = keyRings.getSecretKeyRings().getKeyRings();
         
         while (secKrIter.hasNext()) {
         	PGPSecretKeyRing skr = secKrIter.next();
@@ -77,7 +77,7 @@ public class KeyTable {
             }
         }
         
-        Iterator<PGPPublicKeyRing> publicKeyIterator = KeyRings.getPublicKeyRings().getKeyRings();
+        Iterator<PGPPublicKeyRing> publicKeyIterator = keyRings.getPublicKeyRings().getKeyRings();
         while (publicKeyIterator.hasNext()) {
         	PGPPublicKeyRing skr = publicKeyIterator.next();
         	Iterator<PGPPublicKey> pubKeysIter = skr.getPublicKeys();
@@ -104,7 +104,7 @@ public class KeyTable {
         return result;
 	}
 	
-	private static void createVBox(BorderPane pane) {
+	private void createVBox(BorderPane pane) {
 		secretKeysVBox = new VBox();
 		secretKeysVBox.setPadding(new Insets(10));
 		secretKeysVBox.setSpacing(8);
@@ -143,26 +143,21 @@ public class KeyTable {
                         super.updateItem(item, empty);
                         if (empty) {
                             setGraphic(null);
-                            setText(null);
                         } else {
                             btn.setOnAction(event -> {
                                 KeyColumn keyColumn = getTableView().getItems().get(getIndex());
-                                if (keyColumn.getIsPublic()) {
-                                	try {
-										KeyRings.deletePublicKey(KeyRings.getPublicKeyRings().getPublicKeyRing(Long.valueOf(keyColumn.getOriginalKeyId())));
-										refreshTableRows(tableView);
-									} catch (NumberFormatException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (PGPException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} 
+                                Dialog<Boolean> confirmDialog = showConfirmDialog(keyColumn.getName(), keyColumn.getEmail());
+                                Optional<Boolean> confirmationOptional = confirmDialog.showAndWait();
+                                Boolean deletionConfirmed = confirmationOptional.get();
+                                if (deletionConfirmed) {
+                                    Long keyId = keyColumn.getOriginalKeyId();
+                                    boolean isPublic = keyColumn.getIsPublic();
+                                    if (deleteKey(keyId, isPublic)) refreshTableRows(tableView);
                                 }
                             });
                             setGraphic(btn);
-                            setText(null);
                         }
+                        setText(null);
                     }
                 };
                 return cell;
@@ -180,8 +175,55 @@ public class KeyTable {
 		refreshTableRows(tableView);
 
 	}
+
+    private boolean deleteKey(Long keyId, boolean isPublic) {
+	    boolean keyDeleted = false;
+        if (isPublic) {
+            try {
+                keyRings.deletePublicKey(keyId);
+                keyDeleted = true;
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        } else {
+            int passwordAttemptCounter = 0;
+            boolean passwordVerified = false;
+            PasswordDialog passwordDialog = new PasswordDialog();
+
+            while (!passwordVerified && passwordAttemptCounter < 3) {
+                Optional<String> passwordOptional = passwordDialog.showAndWait();
+                if (passwordOptional.isPresent()) {
+                    String password = passwordOptional.get();
+                    passwordVerified = keyRings.verifySecretKeyPassword(keyId, password);
+                }
+                passwordAttemptCounter++;
+            }
+            if (passwordVerified) {
+                // verifikacija lozinke je uspesna, brisemo kljuc
+                keyRings.deleteSecretKey(keyId);
+                keyDeleted = true;
+            }
+        }
+        return keyDeleted;
+    }
+
+    private Dialog showConfirmDialog(String name, String email) {
+        Dialog<Boolean> confirmDialog = new Dialog();
+        confirmDialog.setTitle("Are you sure?");
+        Label label = new Label("Are you sure you want to delete key " + name + "<" + email + ">");
+        HBox content = new HBox();
+        content.getChildren().add(label);
+        confirmDialog.getDialogPane().getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
+        confirmDialog.setResultConverter(buttonClicked -> {
+            if (buttonClicked == ButtonType.YES) return Boolean.TRUE;
+            else return Boolean.FALSE;
+        });
+        confirmDialog.getDialogPane().setContent(content);
+
+        return confirmDialog;
+    }
 	
-	private static void refreshTableRows(TableView tableView) {
+	private void refreshTableRows(TableView tableView) {
 		secretKeysVBox.getChildren().clear();
 		tableView.getItems().clear();
 		List<KeyColumn> keysList = getKeyColumns();
