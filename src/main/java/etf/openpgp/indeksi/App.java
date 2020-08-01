@@ -72,7 +72,7 @@ public class App extends Application
 			InputStream fileIs = readFile(stage, fileChooser);
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
-				pane.setCenter(keyTable.openSecretKeysTable(pane));
+				pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -87,34 +87,10 @@ public class App extends Application
 		return new FileInputStream(selectedFile);
 	}
 
-	private void saveTextToFile(String content, File file) {
-        try {
-            PrintWriter writer;
-            writer = new PrintWriter(file);
-            writer.println(content);
-            writer.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
 	
-	private void ExportKeyPair(String sampleText, Stage stage) {
-		FileChooser fileChooser = new FileChooser();
- 
-        //Set extension filter for text files
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("ASC files (*.asc)", "*.asc");
-        fileChooser.getExtensionFilters().add(extFilter);
- 
-        //Show save file dialog
-        File file = fileChooser.showSaveDialog(stage);
- 
-        if (file != null) {
-            saveTextToFile(sampleText, file);
-        }
-	}
 	
-	private void GenerateNewKeyPair(BorderPane pane) {
-		pane.setCenter(generateKey.openAddKeyMenu(pane));
+	private void GenerateNewKeyPair(BorderPane pane, Stage stage) {
+		pane.setCenter(generateKey.openAddKeyMenu(pane, stage));
 	}
 	
     @Override
@@ -128,7 +104,7 @@ public class App extends Application
         keysMenu1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				GenerateNewKeyPair(root);
+				GenerateNewKeyPair(root, stage);
 			}
 		});
         
@@ -139,15 +115,6 @@ public class App extends Application
 				ChooseFileForKeyPairImporting(stage, root);
 			}
         });
-        
-        final String sampleText = "Test";
-        MenuItem keysMenu3=new MenuItem("Export key pair");  
-        keysMenu3.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent event) {
-				ExportKeyPair(sampleText, stage);
-			}
-		});
         
         Menu EncryptMenu=new Menu("Encrypt/Sign");
         MenuItem encryptMenuItem1 = new MenuItem("Choose file");
@@ -169,14 +136,14 @@ public class App extends Application
 			}
 		});
         
-        KeysMenu.getItems().addAll(keysMenu1,keysMenu2,keysMenu3);  
+        KeysMenu.getItems().addAll(keysMenu1,keysMenu2);  
         EncryptMenu.getItems().addAll(encryptMenuItem1);
         DecryptMenu.getItems().addAll(decryptMenuItem1);
         
         menubar.getMenus().addAll(KeysMenu,EncryptMenu, DecryptMenu);  
         
         root.setTop(menubar);
-        root.setCenter(keyTable.openSecretKeysTable(root));
+        root.setCenter(keyTable.openSecretKeysTable(root, stage));
         stage.setScene(scene);  
         stage.show();  
     }

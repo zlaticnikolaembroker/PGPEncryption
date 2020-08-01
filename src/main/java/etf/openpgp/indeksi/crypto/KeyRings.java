@@ -136,9 +136,9 @@ public class KeyRings {
         saveSecretKeyRing();
     }
 
-    public void exportSecretKeyRing() {
-        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("sec.asc"))){
-            Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings("proka@test.com");
+    public void exportSecretKeyRing(String fileName, String userId) {
+        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream(fileName))){
+            Iterator<PGPSecretKeyRing> keyRingsIter = secretKeyRings.getKeyRings(userId);
             while (keyRingsIter.hasNext()) {
                 PGPSecretKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
@@ -148,16 +148,18 @@ public class KeyRings {
         }
     }
 
-    public void exportPublicKeyRing() {
-        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream("pub.asc"))) {
-            Iterator<PGPPublicKeyRing> keyRingsIter = publicKeyRings.getKeyRings("proka@test.com");
+    public boolean exportPublicKeyRing(String fileName, String userID) {
+        try (OutputStream out = new ArmoredOutputStream(new FileOutputStream(fileName))) {
+            Iterator<PGPPublicKeyRing> keyRingsIter = publicKeyRings.getKeyRings(userID);
             while (keyRingsIter.hasNext()) {
                 PGPPublicKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
             }
         } catch (IOException | PGPException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     /**
