@@ -21,6 +21,9 @@ import org.bouncycastle.openpgp.PGPException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -87,8 +90,12 @@ public class SignAndEncrypt {
         encryptBtn.setOnAction(e -> {
             List<Key> recipientList = new LinkedList<>(encryptionKeysTable.getSelectionModel().getSelectedItems());
             boolean shouldSign = signCheckBox.isSelected();
-            Key signingKey = signingKeyComboBox.getValue();
+            Key signingKey = shouldSign ? signingKeyComboBox.getValue() : null;
             try {
+                if (shouldSign && !PasswordVerificator.verify(signingKey.getKeyId(), keyRings)) {
+                    // ukoliko smo pokusali potpisivanje a nije verifikovana lozinka, obustavljamo
+                    return;
+                }
                 String encryptedFilePath = filePath.concat(".asc");
                 OutputStream out = new FileOutputStream(encryptedFilePath);
                 encryptor.encryptFile(out, filePath, recipientList, signingKey, "test", true);
@@ -103,7 +110,7 @@ public class SignAndEncrypt {
                 encryptionKeysTable.getSelectionModel().getSelectedItems(), signCheckBox.selectedProperty()));
 
         Button cancelBtn = new Button("Cancel");
-        cancelBtn.setOnAction(e -> pane.setCenter(keyTable.openSecretKeysTable(pane, stage)));
+        cancelBtn.setOnAction(e -> pane.setCenter(keyTable.openSecretKeysTable(stage)));
 
         signAndEncryptVBox.getChildren().addAll(encryptBtn, cancelBtn);
     }
