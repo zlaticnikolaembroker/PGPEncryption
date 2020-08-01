@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import etf.openpgp.indeksi.crypto.EncryptionAlgorithms;
+import etf.openpgp.indeksi.crypto.models.EncryptionAlgorithms;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
