@@ -4,6 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
 import etf.openpgp.indeksi.front.PasswordVerificator;
+import etf.openpgp.indeksi.front.SuccessScreen;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,14 +93,14 @@ public class Decryptor {
             }
             
             PGPOnePassSignature ops = null;
+            String userId = null;
             if (message instanceof PGPOnePassSignatureList) {
     			PGPOnePassSignatureList p1 = (PGPOnePassSignatureList) message;
     			ops = p1.get(0);
     			long keyID = ops.getKeyID();
     			PGPPublicKey signerPublicKey = this.keyRings.getPublicKeyRings().getPublicKey(keyID);
     			if (signerPublicKey.getUserIDs().hasNext()) {
-    				String userId = (String) signerPublicKey.getUserIDs().next();
-    				System.out.println(userId);
+    				userId = (String) signerPublicKey.getUserIDs().next();
     			}
     			ops.initVerify(signerPublicKey, "BC");
     			message = pgpFact.nextObject();
@@ -115,6 +116,12 @@ public class Decryptor {
                 while ((ch = unc.read()) >= 0) {
                     out.write(ch);
                 }
+                String label = "File successfully decrypted.";
+                if (userId != null) {
+                	label += " Sygned by: " + userId + ".";
+                }
+                SuccessScreen successScreen = new SuccessScreen("File successfully decrypted", label);
+                successScreen.showAndWait();
             }
         }
 }
