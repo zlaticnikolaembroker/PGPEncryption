@@ -46,7 +46,7 @@ public class App extends Application
 		fileChooser.setTitle("Open file to decrypt");
 		
 		fileChooser.getExtensionFilters().addAll(
-		         new ExtensionFilter("Text Files", "*.txt"));
+		         new ExtensionFilter("Text Files", "*.asc"));
 		try {
 			return readFile(stage, fileChooser);
 		} catch (FileNotFoundException e) {
@@ -140,6 +140,12 @@ public class App extends Application
 						InputStream in = new FileInputStream(fileToDecrypt);
 						File outputFile = new File(fileToDecrypt.getPath() + ".gpg");
 						OutputStream out = new FileOutputStream(outputFile);
+						Decryptor decryptor = new Decryptor(keyRings);
+						try {
+							decryptor.decryptFile(in, out);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					} catch (FileNotFoundException e) {
 						e.printStackTrace();
 					}

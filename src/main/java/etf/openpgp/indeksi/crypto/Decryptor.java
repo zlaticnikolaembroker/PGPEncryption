@@ -3,6 +3,8 @@ package etf.openpgp.indeksi.crypto;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
+import etf.openpgp.indeksi.front.PasswordVerificator;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,7 +21,7 @@ public class Decryptor {
         this.keyRings = keyRings;
     }
     
-    private PGPPrivateKey findSecretKey(long keyID, char[] password)
+    private PGPPrivateKey findSecretKey(long keyID)
             throws Exception
         {
      
@@ -29,16 +31,16 @@ public class Decryptor {
                 return null;
             }
 
-            boolean passMatched = this.keyRings.verifySecretKeyPassword(keyID, new String(password));
+            String password = PasswordVerificator.verify(keyID, this.keyRings);
             
-            if (!passMatched) {
+            if (password == null) {
             	throw new Exception("Pass don't match");
             }
      
-            return pgpSecKey.extractPrivateKey(password, "BC");
+            return pgpSecKey.extractPrivateKey(password.toCharArray(), "BC");
         }
     
-    public void decryptFile(InputStream in, OutputStream out, char[] passwd)
+    public void decryptFile(InputStream in, OutputStream out)
             throws Exception
         {
             Security.addProvider(new BouncyCastleProvider());
@@ -68,7 +70,7 @@ public class Decryptor {
             while (secretKey == null && publicKeyEncryptedDataIterator.hasNext()) {
                 pbe = publicKeyEncryptedDataIterator.next();
      
-                secretKey = this.findSecretKey(pbe.getKeyID(), passwd);
+                secretKey = this.findSecretKey(pbe.getKeyID());
             }
      
             if (secretKey == null) {
@@ -88,6 +90,16 @@ public class Decryptor {
      
                 message = pgpFact.nextObject();
             }
+            
+            PGPOnePassSignature ops = null;
+            if (message instanceof PGPOnePassSignatureList) {
+    			PGPOnePassSignatureList p1 = (PGPOnePassSignatureList) message;
+    			ops = p1.get(0);
+    			long keyID = ops.getKeyID();
+    			PGPPublicKey signerPublicKey = this.keyRings.getPublicKeyRings().getPublicKey(keyID);
+    			ops.initVerify(signerPublicKey, "BC");
+    			message = pgpObjectFactory.nextObject();
+    		}
      
             if (message instanceof  PGPLiteralData) {
                 PGPLiteralData ld = (PGPLiteralData) message;
@@ -97,16 +109,6 @@ public class Decryptor {
      
                 while ((ch = unc.read()) >= 0) {
                     out.write(ch);
-                }
-            } else if (message instanceof  PGPOnePassSignatureList) {
-                throw new PGPException("Encrypted message contains a signed message - not literal data.");
-            } else {
-                throw new PGPException("Message is not a simple encrypted file - type unknown.");
-            }
-     
-            if (pbe.isIntegrityProtected()) {
-                if (!pbe.verify()) {
-                    throw new PGPException("Message failed integrity check");
                 }
             }
         }
