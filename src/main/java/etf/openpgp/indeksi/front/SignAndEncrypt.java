@@ -111,6 +111,7 @@ public class SignAndEncrypt {
                     OutputStream out = new FileOutputStream(signatureFilePath);
                     signer.signFile(out, filePath, signingKey, password);
                 }
+                pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
             } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
                 exception.printStackTrace();
             }
