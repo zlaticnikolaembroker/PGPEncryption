@@ -95,6 +95,13 @@ public class App extends Application
 		}
 		return null;
 	}
+
+	private static String formatOutputFileName(File inputFile){
+		String name = inputFile.getName();
+		String fileName = name.replaceFirst("[.][^.]+$", "");
+
+		return inputFile.getPath().replace(fileName, fileName + "_decrypted");
+	}
 	
     @Override
     public void start(final Stage stage) {
@@ -138,7 +145,7 @@ public class App extends Application
 				if (fileToDecrypt != null) {
 					try {
 						InputStream in = new FileInputStream(fileToDecrypt);
-						File outputFile = new File(fileToDecrypt.getPath() + ".gpg");
+						File outputFile = new File(formatOutputFileName(fileToDecrypt));
 						OutputStream out = new FileOutputStream(outputFile);
 						Decryptor decryptor = new Decryptor(keyRings);
 						try {
