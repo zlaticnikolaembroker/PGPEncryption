@@ -2,7 +2,7 @@ package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
 import etf.openpgp.indeksi.crypto.models.Key;
-import etf.openpgp.indeksi.front.SuccessScreen;
+import etf.openpgp.indeksi.front.InfoScreen;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
@@ -116,14 +116,14 @@ public class KeyRings {
             while ((o = pgpObjectFactory.nextObject()) !=null) {
                 if (o instanceof PGPSecretKeyRing) {
                     importSecretKeyRing((PGPSecretKeyRing) o);
-                    SuccessScreen successScreen = new SuccessScreen("Secret key successfully imported.", "Secret key successfully imported.");
+                    InfoScreen successScreen = new InfoScreen("Secret key successfully imported.", "Secret key successfully imported.");
                     successScreen.showAndWait();
                 } else if (o instanceof PGPPublicKeyRing) {
                     importPublicKeyRing((PGPPublicKeyRing) o);
-                    SuccessScreen successScreen = new SuccessScreen("Public key successfully imported.", "Public key successfully imported.");
+                    InfoScreen successScreen = new InfoScreen("Public key successfully imported.", "Public key successfully imported.");
                     successScreen.showAndWait();
                 } else {
-                	SuccessScreen successScreen = new SuccessScreen("File doesn't include any key.", "File doesn't include any key.");
+                	InfoScreen successScreen = new InfoScreen("File doesn't include any key.", "File doesn't include any key.");
                     successScreen.showAndWait();
                 }
             }
@@ -148,7 +148,7 @@ public class KeyRings {
                 PGPSecretKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
             }
-            SuccessScreen successScreen = new SuccessScreen("Secret key successfully exported", "Secret key successfully exported");
+            InfoScreen successScreen = new InfoScreen("Secret key successfully exported", "Secret key successfully exported");
             successScreen.showAndWait();
         } catch (PGPException | IOException e) {
             e.printStackTrace();
@@ -162,7 +162,7 @@ public class KeyRings {
                 PGPPublicKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
             }
-            SuccessScreen successScreen = new SuccessScreen("Public key successfully exported", "Public key successfully exported");
+            InfoScreen successScreen = new InfoScreen("Public key successfully exported", "Public key successfully exported");
             successScreen.showAndWait();
         } catch (IOException | PGPException e) {
             e.printStackTrace();

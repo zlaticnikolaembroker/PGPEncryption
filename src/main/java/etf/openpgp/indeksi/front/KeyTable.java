@@ -163,7 +163,7 @@ public class KeyTable {
                                     Long keyId = keyColumn.getOriginalKeyId();
                                     boolean isPublic = keyColumn.getIsPublic();
                                     if (deleteKey(keyId, isPublic)) {
-                                    	SuccessScreen successScreen = new SuccessScreen("Keypair successfully deleted", "Keypair successfully deleted");
+                                    	InfoScreen successScreen = new InfoScreen("Keypair successfully deleted", "Keypair successfully deleted");
             							successScreen.showAndWait();
                                     	refreshTableRows(tableView);
                                     }

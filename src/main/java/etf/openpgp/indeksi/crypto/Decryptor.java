@@ -4,7 +4,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
 import etf.openpgp.indeksi.front.PasswordVerificator;
-import etf.openpgp.indeksi.front.SuccessScreen;
+import etf.openpgp.indeksi.front.InfoScreen;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -120,7 +120,7 @@ public class Decryptor {
                 if (userId != null) {
                 	label += " Sygned by: " + userId + ".";
                 }
-                SuccessScreen successScreen = new SuccessScreen("File successfully decrypted", label);
+                InfoScreen successScreen = new InfoScreen("File successfully decrypted", label);
                 successScreen.showAndWait();
             }
         }

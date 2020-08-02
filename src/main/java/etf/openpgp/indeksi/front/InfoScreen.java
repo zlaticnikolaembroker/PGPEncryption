@@ -6,9 +6,9 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 
-public class SuccessScreen extends Dialog<String>{
+public class InfoScreen extends Dialog<String>{
 
-    public SuccessScreen(String title, String labelText) {
+    public InfoScreen(String title, String labelText) {
         setTitle(title);
         Label label = new Label(labelText);
         HBox content = new HBox();
