@@ -82,12 +82,12 @@ public class Decryptor {
             PGPObjectFactory plainFact = new PGPObjectFactory(clear);
      
             Object message = plainFact.nextObject();
-     
-            // check if data is ZIPed
+            PGPObjectFactory pgpFact = null;
+            // check if data is ZIP-ed
             if (message instanceof  PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
-                PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());
-     
+                pgpFact = new PGPObjectFactory(cData.getDataStream());
+                System.out.println("zipped");
                 message = pgpFact.nextObject();
             }
             
@@ -97,8 +97,13 @@ public class Decryptor {
     			ops = p1.get(0);
     			long keyID = ops.getKeyID();
     			PGPPublicKey signerPublicKey = this.keyRings.getPublicKeyRings().getPublicKey(keyID);
+    			if (signerPublicKey.getUserIDs().hasNext()) {
+    				String userId = (String) signerPublicKey.getUserIDs().next();
+    				System.out.println(userId);
+    			}
     			ops.initVerify(signerPublicKey, "BC");
-    			message = pgpObjectFactory.nextObject();
+    			message = pgpFact.nextObject();
+    			
     		}
      
             if (message instanceof  PGPLiteralData) {
