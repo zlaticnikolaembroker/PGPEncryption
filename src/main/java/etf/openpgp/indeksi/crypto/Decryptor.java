@@ -19,64 +19,69 @@ public class Decryptor {
         this.keyRings = keyRings;
     }
     
-    private static PGPPrivateKey findSecretKey(InputStream keyIn, long keyID, char[] pass)
-            throws IOException, PGPException, NoSuchProviderException
+    private PGPPrivateKey findSecretKey(long keyID, char[] password)
+            throws Exception
         {
-            PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(
-                org.bouncycastle.openpgp.PGPUtil.getDecoderStream(keyIn));
      
-            PGPSecretKey pgpSecKey = pgpSec.getSecretKey(keyID);
+            PGPSecretKey pgpSecKey = this.keyRings.getSecretKeyRings().getSecretKey(keyID);
      
             if (pgpSecKey == null) {
                 return null;
             }
+
+            boolean passMatched = this.keyRings.verifySecretKeyPassword(keyID, new String(password));
+            
+            if (!passMatched) {
+            	throw new Exception("Pass don't match");
+            }
      
-            return pgpSecKey.extractPrivateKey(pass, "BC");
+            return pgpSecKey.extractPrivateKey(password, "BC");
         }
     
-    public static void decryptFile(InputStream in, OutputStream out, InputStream keyIn, char[] passwd)
+    public void decryptFile(InputStream in, OutputStream out, char[] passwd)
             throws Exception
         {
             Security.addProvider(new BouncyCastleProvider());
      
             in = org.bouncycastle.openpgp.PGPUtil.getDecoderStream(in);
      
-            PGPObjectFactory pgpF = new PGPObjectFactory(in);
-            PGPEncryptedDataList enc;
+            PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(in);
+            PGPEncryptedDataList encryptedDataList;
      
-            Object o = pgpF.nextObject();
+            Object pgpObject = pgpObjectFactory.nextObject();
             //
             // the first object might be a PGP marker packet.
             //
-            if (o instanceof  PGPEncryptedDataList) {
-                enc = (PGPEncryptedDataList) o;
+            if (pgpObject instanceof  PGPEncryptedDataList) {
+                encryptedDataList = (PGPEncryptedDataList) pgpObject;
             } else {
-                enc = (PGPEncryptedDataList) pgpF.nextObject();
+            	encryptedDataList = (PGPEncryptedDataList) pgpObjectFactory.nextObject();
             }
      
             //
             // find the secret key
             //
-            Iterator<PGPPublicKeyEncryptedData> it = enc.getEncryptedDataObjects();
-            PGPPrivateKey sKey = null;
+            Iterator<PGPPublicKeyEncryptedData> publicKeyEncryptedDataIterator = encryptedDataList.getEncryptedDataObjects();
+            PGPPrivateKey secretKey = null;
             PGPPublicKeyEncryptedData pbe = null;
      
-            while (sKey == null && it.hasNext()) {
-                pbe = it.next();
+            while (secretKey == null && publicKeyEncryptedDataIterator.hasNext()) {
+                pbe = publicKeyEncryptedDataIterator.next();
      
-                sKey = findSecretKey(keyIn, pbe.getKeyID(), passwd);
+                secretKey = this.findSecretKey(pbe.getKeyID(), passwd);
             }
      
-            if (sKey == null) {
+            if (secretKey == null) {
                 throw new IllegalArgumentException("Secret key for message not found.");
             }
      
-            InputStream clear = pbe.getDataStream(sKey, "BC");
+            InputStream clear = pbe.getDataStream(secretKey, "BC");
      
             PGPObjectFactory plainFact = new PGPObjectFactory(clear);
      
             Object message = plainFact.nextObject();
      
+            // check if data is ZIPed
             if (message instanceof  PGPCompressedData) {
                 PGPCompressedData cData = (PGPCompressedData) message;
                 PGPObjectFactory pgpFact = new PGPObjectFactory(cData.getDataStream());

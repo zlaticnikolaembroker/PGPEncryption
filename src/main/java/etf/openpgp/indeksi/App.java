@@ -2,6 +2,7 @@ package etf.openpgp.indeksi;
 
 import java.io.*;
 
+import etf.openpgp.indeksi.crypto.Decryptor;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import etf.openpgp.indeksi.front.GenerateKey;
@@ -40,17 +41,18 @@ public class App extends Application
 		root.setCenter(signAndEncrypt.openSignAndEncrypt(root, stage, keyTable, filePath, keyRings));
 	}
 	
-	private void ChooseFileToDecryptClicked(Stage stage) {
+	private File ChooseFileToDecryptClicked(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to decrypt");
 		
 		fileChooser.getExtensionFilters().addAll(
 		         new ExtensionFilter("Text Files", "*.txt"));
 		try {
-			readFile(stage, fileChooser);
+			return readFile(stage, fileChooser);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 	
 	private void ChooseFileForKeyPairImporting(Stage stage, BorderPane pane) {
@@ -58,7 +60,7 @@ public class App extends Application
 		fileChooser.setTitle("Open file to import key pair");
 		
 		try {
-			InputStream fileIs = readFile(stage, fileChooser);
+			InputStream fileIs = new FileInputStream(readFile(stage, fileChooser));
 			if (fileIs != null) {
 				keyRings.importKeyPair(fileIs);
 				pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
@@ -68,12 +70,8 @@ public class App extends Application
 		}
 	}
 
-	private InputStream readFile(Stage stage, FileChooser fileChooser) throws FileNotFoundException {
-		File selectedFile = fileChooser.showOpenDialog(stage);
-		if (selectedFile == null) {
-			return null;
-		}
-		return new FileInputStream(selectedFile);
+	private File readFile(Stage stage, FileChooser fileChooser) throws FileNotFoundException {
+		return fileChooser.showOpenDialog(stage);
 	}
 
 	
@@ -136,8 +134,16 @@ public class App extends Application
         decryptMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				ChooseFileToDecryptClicked(stage);
-				
+				File fileToDecrypt = ChooseFileToDecryptClicked(stage);
+				if (fileToDecrypt != null) {
+					try {
+						InputStream in = new FileInputStream(fileToDecrypt);
+						File outputFile = new File(fileToDecrypt.getPath() + ".gpg");
+						OutputStream out = new FileOutputStream(outputFile);
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		});
         
