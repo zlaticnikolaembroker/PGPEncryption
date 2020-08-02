@@ -129,6 +129,8 @@ public class GenerateKey {
 							successScreen.showAndWait();
 							pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
 						} catch (NoSuchProviderException | NoSuchAlgorithmException | PGPException ex) {
+							InfoScreen successScreen = new InfoScreen("Something went wrong.", ex.getMessage());
+            				successScreen.showAndWait();
 							ex.printStackTrace();
 						}
 	            	}

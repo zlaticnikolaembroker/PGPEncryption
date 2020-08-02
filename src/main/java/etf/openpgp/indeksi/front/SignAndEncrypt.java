@@ -113,6 +113,8 @@ public class SignAndEncrypt {
                 }
                 pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
             } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", exception.getMessage());
+                successScreen.showAndWait();
                 exception.printStackTrace();
             }
         });

@@ -42,6 +42,8 @@ public class Encryptor {
                     encryptedDataGenerator.addMethod(publicKey);
                 }
             } catch (PGPException | NoSuchProviderException e) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+                successScreen.showAndWait();
                 e.printStackTrace();
             }
         }

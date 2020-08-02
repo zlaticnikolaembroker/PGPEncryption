@@ -6,6 +6,7 @@ import etf.openpgp.indeksi.crypto.Decryptor;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import etf.openpgp.indeksi.front.GenerateKey;
+import etf.openpgp.indeksi.front.InfoScreen;
 import etf.openpgp.indeksi.front.KeyTable;
 import etf.openpgp.indeksi.front.SignAndEncrypt;
 import javafx.application.Application;
@@ -13,7 +14,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;  
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;  
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -48,6 +48,8 @@ public class App extends Application
 		try {
 			return readFile(stage, fileChooser);
 		} catch (FileNotFoundException e) {
+			InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
 			e.printStackTrace();
 		}
 		return null;
@@ -58,12 +60,17 @@ public class App extends Application
 		fileChooser.setTitle("Open file to import key pair");
 		
 		try {
-			InputStream fileIs = new FileInputStream(readFile(stage, fileChooser));
-			if (fileIs != null) {
-				keyRings.importKeyPair(fileIs);
-				pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
+			File file = readFile(stage, fileChooser);
+			if (file != null) {
+				InputStream fileIs = new FileInputStream(file);
+				if (fileIs != null) {
+					keyRings.importKeyPair(fileIs);
+					pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
+				}
 			}
 		} catch (FileNotFoundException e) {
+			InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
 			e.printStackTrace();
 		}
 	}
@@ -150,9 +157,13 @@ public class App extends Application
 							decryptor.decryptFile(in, out);
 							root.setCenter(keyTable.openSecretKeysTable(root, stage));
 						} catch (Exception e) {
+							InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            				successScreen.showAndWait();
 							e.printStackTrace();
 						}
 					} catch (FileNotFoundException e) {
+						InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            			successScreen.showAndWait();
 						e.printStackTrace();
 					}
 				}

@@ -44,12 +44,16 @@ public class KeyRings {
             try (InputStream publicIn = new FileInputStream(publicRingFile)) {
                 publicKeyRings = new PGPPublicKeyRingCollection(publicIn);
             } catch (IOException | PGPException ex) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", ex.getMessage());
+                successScreen.showAndWait();
                 ex.printStackTrace();
             }
         } else {
             try {
                 publicKeyRings = new PGPPublicKeyRingCollection(Collections.EMPTY_LIST);
             } catch (IOException | PGPException ex) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", ex.getMessage());
+                successScreen.showAndWait();
                 ex.printStackTrace();
             }
         }
@@ -58,12 +62,16 @@ public class KeyRings {
             try (InputStream secretIn = new FileInputStream(secretRingFile)) {
                 secretKeyRings = new PGPSecretKeyRingCollection(secretIn);
             } catch (IOException | PGPException ex) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", ex.getMessage());
+                successScreen.showAndWait();
                 ex.printStackTrace();
             }
         } else {
             try {
                 secretKeyRings = new PGPSecretKeyRingCollection(Collections.EMPTY_LIST);
             } catch (IOException | PGPException ex) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", ex.getMessage());
+                successScreen.showAndWait();
                 ex.printStackTrace();
             }
         }
@@ -128,6 +136,8 @@ public class KeyRings {
                 }
             }
         } catch (IOException e) {
+        	InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
         }
     }
@@ -151,6 +161,8 @@ public class KeyRings {
             InfoScreen successScreen = new InfoScreen("Secret key successfully exported", "Secret key successfully exported");
             successScreen.showAndWait();
         } catch (PGPException | IOException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
         }
     }
@@ -165,6 +177,8 @@ public class KeyRings {
             InfoScreen successScreen = new InfoScreen("Public key successfully exported", "Public key successfully exported");
             successScreen.showAndWait();
         } catch (IOException | PGPException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
             return false;
         }
@@ -178,6 +192,8 @@ public class KeyRings {
         try (OutputStream out = new FileOutputStream(publicRingFile)) {
             publicKeyRings.encode(out);
         } catch (IOException ioe) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", ioe.getMessage());
+            successScreen.showAndWait();
             ioe.printStackTrace();
         }
     }
@@ -189,6 +205,8 @@ public class KeyRings {
         try (OutputStream out = new FileOutputStream(secretRingFile)) {
             secretKeyRings.encode(out);
         } catch (IOException ioe) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", ioe.getMessage());
+            successScreen.showAndWait();
             ioe.printStackTrace();
         }
     }
@@ -263,6 +281,8 @@ public class KeyRings {
                 }
             }
         } catch (PGPException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
         }
         if (secretKey != null) {
@@ -270,6 +290,8 @@ public class KeyRings {
                 PBESecretKeyDecryptor keyDecryptor = new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(password.toCharArray());
                 PGPPrivateKey privateKey = secretKey.extractPrivateKey(keyDecryptor);
             } catch (PGPException e) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+                successScreen.showAndWait();
                 return false;
             }
         }
@@ -293,6 +315,8 @@ public class KeyRings {
             saveSecretKeyRing();
             savePublicKeyRing();
         } catch (PGPException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
         }
     }
@@ -303,6 +327,8 @@ public class KeyRings {
             publicKeyRings = publicKeyRings.removePublicKeyRing(publicKeyRings, publicKeyRing);
             savePublicKeyRing();
         } catch (PGPException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             e.printStackTrace();
         }
     }

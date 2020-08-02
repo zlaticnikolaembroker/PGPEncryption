@@ -284,6 +284,8 @@ public class KeyTable {
                 keyRings.deletePublicKey(keyId);
                 keyDeleted = true;
             } catch (NumberFormatException e) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+                successScreen.showAndWait();
                 e.printStackTrace();
             }
         } else {

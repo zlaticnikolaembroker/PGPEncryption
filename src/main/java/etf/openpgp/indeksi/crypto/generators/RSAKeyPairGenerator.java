@@ -4,6 +4,8 @@ import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPPublicKey;
 
+import etf.openpgp.indeksi.front.InfoScreen;
+
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -17,6 +19,8 @@ public class RSAKeyPairGenerator implements KeyPairGenerator {
             KeyPair keyPair = generateKeyPair(keySize);
             return keyPair != null ? new PGPKeyPair(PGPPublicKey.RSA_SIGN, keyPair, new Date(), "BC") : null;
         } catch (PGPException | NoSuchProviderException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             return null;
         }
     }
@@ -27,6 +31,8 @@ public class RSAKeyPairGenerator implements KeyPairGenerator {
             KeyPair keyPair = generateKeyPair(keySize);
             return keyPair != null ? new PGPKeyPair(PGPPublicKey.RSA_ENCRYPT, keyPair, new Date(), "BC") : null;
         } catch (PGPException | NoSuchProviderException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             return null;
         }
     }
@@ -36,6 +42,8 @@ public class RSAKeyPairGenerator implements KeyPairGenerator {
             java.security.KeyPairGenerator kpg = initialize(keySize);
             return kpg.generateKeyPair();
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+            successScreen.showAndWait();
             return null;
         }
     }
