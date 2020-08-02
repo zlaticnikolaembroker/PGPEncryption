@@ -116,10 +116,15 @@ public class KeyRings {
             while ((o = pgpObjectFactory.nextObject()) !=null) {
                 if (o instanceof PGPSecretKeyRing) {
                     importSecretKeyRing((PGPSecretKeyRing) o);
+                    SuccessScreen successScreen = new SuccessScreen("Secret key successfully imported.", "Secret key successfully imported.");
+                    successScreen.showAndWait();
                 } else if (o instanceof PGPPublicKeyRing) {
                     importPublicKeyRing((PGPPublicKeyRing) o);
+                    SuccessScreen successScreen = new SuccessScreen("Public key successfully imported.", "Public key successfully imported.");
+                    successScreen.showAndWait();
                 } else {
-                    System.out.println("sta je onda???");
+                	SuccessScreen successScreen = new SuccessScreen("File doesn't include any key.", "File doesn't include any key.");
+                    successScreen.showAndWait();
                 }
             }
         } catch (IOException e) {
