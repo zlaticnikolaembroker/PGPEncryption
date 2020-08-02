@@ -2,6 +2,8 @@ package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
 import etf.openpgp.indeksi.crypto.models.Key;
+import etf.openpgp.indeksi.front.SuccessScreen;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
@@ -141,6 +143,8 @@ public class KeyRings {
                 PGPSecretKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
             }
+            SuccessScreen successScreen = new SuccessScreen("Secret key successfully exported", "Secret key successfully exported");
+            successScreen.showAndWait();
         } catch (PGPException | IOException e) {
             e.printStackTrace();
         }
