@@ -45,8 +45,6 @@ public class App extends Application
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Open file to decrypt");
 		
-		fileChooser.getExtensionFilters().addAll(
-		         new ExtensionFilter("Text Files", "*.asc"));
 		try {
 			return readFile(stage, fileChooser);
 		} catch (FileNotFoundException e) {
