@@ -1,6 +1,8 @@
 package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.models.Key;
+import etf.openpgp.indeksi.front.SuccessScreen;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
@@ -88,6 +90,8 @@ public class Encryptor {
         encryptedDataGenerator.close();
         fileInputStream.close();
         out.close();
+        SuccessScreen successScreen = new SuccessScreen("File successfully encrypted", "File successfully encrypted");
+        successScreen.showAndWait();
     }
 
 }
