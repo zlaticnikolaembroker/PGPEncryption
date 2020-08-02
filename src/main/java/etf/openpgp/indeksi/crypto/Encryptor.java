@@ -30,7 +30,7 @@ public class Encryptor {
     }
 
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
-                            String signPassphrase, boolean integrityCheck) throws IOException, PGPException,
+                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
         out = new ArmoredOutputStream(out);
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(PGPEncryptedData.TRIPLE_DES,
@@ -50,7 +50,10 @@ public class Encryptor {
         OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[BUFFER_SIZE]);
 
         PGPCompressedDataGenerator compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
-        OutputStream compressedOut = compressedDataGenerator.open(encryptedOut);
+        if (shouldBeCompressed) {
+            encryptedOut = compressedDataGenerator.open(encryptedOut);    
+        }
+        
 
         PGPSignatureGenerator signatureGenerator = null;
         if (signingKey != null) {
@@ -65,11 +68,11 @@ public class Encryptor {
                 signatureSubpacketGenerator.setSignerUserID(false, userIDs.next());
                 signatureGenerator.setHashedSubpackets(signatureSubpacketGenerator.generate());
             }
-            signatureGenerator.generateOnePassVersion(false).encode(compressedOut);
+            signatureGenerator.generateOnePassVersion(false).encode(encryptedOut);
         }
 
         PGPLiteralDataGenerator literalDataGenerator = new PGPLiteralDataGenerator();
-        OutputStream literalOut = literalDataGenerator.open(compressedOut, PGPLiteralDataGenerator.BINARY, filePath,
+        OutputStream literalOut = literalDataGenerator.open(encryptedOut, PGPLiteralDataGenerator.BINARY, filePath,
                 new Date(), new byte[BUFFER_SIZE]);
 
         FileInputStream fileInputStream = new FileInputStream(filePath);
@@ -84,10 +87,10 @@ public class Encryptor {
         literalOut.close();
         literalDataGenerator.close();
         if (signatureGenerator != null) {
-            signatureGenerator.generate().encode(compressedOut);
+            signatureGenerator.generate().encode(encryptedOut);
         }
-        compressedOut.close();
         compressedDataGenerator.close();
+        encryptedOut.close();
         encryptedOut.close();
         encryptedDataGenerator.close();
         fileInputStream.close();

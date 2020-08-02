@@ -103,8 +103,11 @@ public class Decryptor {
 	    				userId = (String) signerPublicKey.getUserIDs().next();
 	    			}
 	    			ops.initVerify(signerPublicKey, "BC");
-	    			message = pgpFact.nextObject();
-	    			
+	    			if (pgpFact == null) {
+	    				message = plainFact.nextObject();
+	    			} else {
+	    				message = pgpFact.nextObject();
+	    			}
 	    		}
 	     
 	            if (message instanceof  PGPLiteralData) {
