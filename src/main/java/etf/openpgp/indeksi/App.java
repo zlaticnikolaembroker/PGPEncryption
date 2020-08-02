@@ -143,6 +143,7 @@ public class App extends Application
 						Decryptor decryptor = new Decryptor(keyRings);
 						try {
 							decryptor.decryptFile(in, out);
+							root.setCenter(keyTable.openSecretKeysTable(root, stage));
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
