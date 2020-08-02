@@ -157,6 +157,8 @@ public class KeyRings {
                 PGPPublicKeyRing keyRing = keyRingsIter.next();
                 keyRing.encode(out);
             }
+            SuccessScreen successScreen = new SuccessScreen("Public key successfully exported", "Public key successfully exported");
+            successScreen.showAndWait();
         } catch (IOException | PGPException e) {
             e.printStackTrace();
             return false;
