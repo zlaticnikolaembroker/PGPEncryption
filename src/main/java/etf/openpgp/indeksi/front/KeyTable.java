@@ -162,7 +162,11 @@ public class KeyTable {
                                 if (deletionConfirmed) {
                                     Long keyId = keyColumn.getOriginalKeyId();
                                     boolean isPublic = keyColumn.getIsPublic();
-                                    if (deleteKey(keyId, isPublic)) refreshTableRows(tableView);
+                                    if (deleteKey(keyId, isPublic)) {
+                                    	SuccessScreen successScreen = new SuccessScreen("Keypair successfully deleted", "Keypair successfully deleted");
+            							successScreen.showAndWait();
+                                    	refreshTableRows(tableView);
+                                    }
                                 }
                             });
                             setGraphic(btn);
