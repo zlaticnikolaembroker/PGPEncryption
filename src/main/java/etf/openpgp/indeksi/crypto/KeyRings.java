@@ -359,4 +359,12 @@ public class KeyRings {
         while (keyRings.hasNext() && (publicKey = keyRings.next().getPublicKey(keyId)) == null);
         return publicKey;
     }
+
+    public PGPSecretKey getSigningKey(String userId, Long keyId) throws PGPException {
+        Iterator<PGPSecretKeyRing> keyRings = secretKeyRings.getKeyRings(userId);
+        PGPSecretKey secretKey = null;
+
+        while (keyRings.hasNext() && (secretKey = keyRings.next().getSecretKey(keyId)) == null);
+        return secretKey;
+    }
 }

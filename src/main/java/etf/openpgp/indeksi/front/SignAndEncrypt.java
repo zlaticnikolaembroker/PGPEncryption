@@ -2,6 +2,7 @@ package etf.openpgp.indeksi.front;
 
 import etf.openpgp.indeksi.crypto.Encryptor;
 import etf.openpgp.indeksi.crypto.KeyRings;
+import etf.openpgp.indeksi.crypto.Signer;
 import etf.openpgp.indeksi.crypto.models.Key;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -21,6 +22,9 @@ import org.bouncycastle.openpgp.PGPException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,6 +33,7 @@ public class SignAndEncrypt {
     private KeyRings keyRings;
     private KeyTable keyTable;
     private final Encryptor encryptor;
+    private final Signer signer;
     private VBox signAndEncryptVBox;
     private Stage stage;
 
@@ -37,6 +42,7 @@ public class SignAndEncrypt {
     public SignAndEncrypt(KeyRings keyRings) {
         this.keyRings = keyRings;
         this.encryptor = new Encryptor(keyRings);
+        this.signer = new Signer(keyRings);
     }
 
     public VBox openSignAndEncrypt(BorderPane pane, Stage stage, KeyTable keyTable, String filePath, KeyRings keyRings) {
@@ -87,12 +93,25 @@ public class SignAndEncrypt {
         encryptBtn.setOnAction(e -> {
             List<Key> recipientList = new LinkedList<>(encryptionKeysTable.getSelectionModel().getSelectedItems());
             boolean shouldSign = signCheckBox.isSelected();
-            Key signingKey = signingKeyComboBox.getValue();
+            Key signingKey = shouldSign ? signingKeyComboBox.getValue() : null;
             try {
-                String encryptedFilePath = filePath.concat(".asc");
-                OutputStream out = new FileOutputStream(encryptedFilePath);
-                encryptor.encryptFile(out, filePath, recipientList, signingKey, "test", true);
-            } catch (IOException | PGPException exception) {
+                String password = null;
+                if (shouldSign && (password = PasswordVerificator.verify(signingKey.getKeyId(), keyRings)) == null) {
+                    // ukoliko smo pokusali potpisivanje a nije verifikovana lozinka, obustavljamo
+                    return;
+                }
+                if (recipientList.size() > 0) {
+                    // ako imamo primaoce, radimo enkripciju i potpisivanje po potrebi
+                    String encryptedFilePath = filePath.concat(".asc");
+                    OutputStream out = new FileOutputStream(encryptedFilePath);
+                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true);
+                } else {
+                    // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
+                    String signatureFilePath = filePath.concat(".asc");
+                    OutputStream out = new FileOutputStream(signatureFilePath);
+                    signer.signFile(out, filePath, signingKey, password);
+                }
+            } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
                 exception.printStackTrace();
             }
         });

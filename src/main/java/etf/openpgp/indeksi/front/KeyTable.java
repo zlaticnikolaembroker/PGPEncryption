@@ -53,7 +53,7 @@ public class KeyTable {
 	private List<KeyColumn> getKeyColumns() {
 		Map<String, Integer> shownKeys = new HashMap<>();
 		
-		List<KeyColumn> result = new ArrayList<KeyColumn>();
+		List<KeyColumn> result = new ArrayList<>();
 		
         Iterator<PGPSecretKeyRing> secKrIter = keyRings.getSecretKeyRings().getKeyRings();
         
@@ -239,21 +239,7 @@ public class KeyTable {
                                                 if (fileName.substring(fileName.length() - 4) != ".asc") {
                                                     fileName += ".asc";
                                                 }
-                                                int passwordAttemptCounter = 0;
-                                                boolean passwordVerified = false;
-                                                PasswordDialog passwordDialog = new PasswordDialog();
-
-                                                while (!passwordVerified && passwordAttemptCounter < 3) {
-                                                    Optional<String> passwordOptional = passwordDialog.showAndWait();
-                                                    if (passwordOptional.isPresent()) {
-                                                        String password = passwordOptional.get();
-                                                        Long keyId = keyColumn.getOriginalKeyId();
-
-                                                        passwordVerified = keyRings.verifySecretKeyPassword(keyId, password);
-                                                    }
-                                                    passwordAttemptCounter++;
-                                                }
-                                                if (passwordVerified) {
+                                                if (PasswordVerificator.verify(keyColumn.getOriginalKeyId(), keyRings) != null) {
                                                     // verifikacija lozinke je uspesna, exportujemo kljuc
                                                     keyRings.exportSecretKeyRing(fileName, keyColumn.getUserId());
                                                 }
@@ -297,19 +283,7 @@ public class KeyTable {
                 e.printStackTrace();
             }
         } else {
-            int passwordAttemptCounter = 0;
-            boolean passwordVerified = false;
-            PasswordDialog passwordDialog = new PasswordDialog();
-
-            while (!passwordVerified && passwordAttemptCounter < 3) {
-                Optional<String> passwordOptional = passwordDialog.showAndWait();
-                if (passwordOptional.isPresent()) {
-                    String password = passwordOptional.get();
-                    passwordVerified = keyRings.verifySecretKeyPassword(keyId, password);
-                }
-                passwordAttemptCounter++;
-            }
-            if (passwordVerified) {
+            if (PasswordVerificator.verify(keyId, keyRings) != null) {
                 // verifikacija lozinke je uspesna, brisemo kljuc
                 keyRings.deleteSecretKey(keyId);
                 keyDeleted = true;
