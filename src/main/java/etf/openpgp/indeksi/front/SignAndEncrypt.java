@@ -89,7 +89,8 @@ public class SignAndEncrypt {
         encryptionKeysTable.getColumns().add(keyNameCol);
         
         CheckBox checkBox1 = new CheckBox("Compress?");
-        signAndEncryptVBox.getChildren().addAll(checkBox1, recipientsLabel, encryptionKeysTable);
+        CheckBox checkBox2 = new CheckBox("Radix64 format?");
+        signAndEncryptVBox.getChildren().addAll(checkBox1, checkBox2, recipientsLabel, encryptionKeysTable);
 
         Button encryptBtn = new Button("Encrypt/Sign");
         encryptBtn.setOnAction(e -> {
@@ -106,7 +107,7 @@ public class SignAndEncrypt {
                     // ako imamo primaoce, radimo enkripciju i potpisivanje po potrebi
                     String encryptedFilePath = filePath.concat(".asc");
                     OutputStream out = new FileOutputStream(encryptedFilePath);
-                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, checkBox1.isSelected());
+                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, checkBox1.isSelected(), checkBox2.isSelected());
                 } else {
                     // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
                     String signatureFilePath = filePath.concat(".asc");

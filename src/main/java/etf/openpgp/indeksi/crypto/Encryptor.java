@@ -7,6 +7,7 @@ import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import java.util.Base64;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class Encryptor {
     }
 
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
-                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed) throws IOException, PGPException,
+                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
         out = new ArmoredOutputStream(out);
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(PGPEncryptedData.TRIPLE_DES,
@@ -79,7 +80,13 @@ public class Encryptor {
         byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = fileInputStream.read(buffer)) > 0) {
-            literalOut.write(buffer, 0, len);
+        	if (radix64) {
+        		Base64.Encoder encoder = Base64.getEncoder();
+        		literalOut.write(encoder.encode(buffer).toString().getBytes(), 0, len);
+        	} else {
+        		literalOut.write(buffer, 0, len);
+        	}
+            
             if (signatureGenerator != null) {
                 signatureGenerator.update(buffer, 0, len);
             }
@@ -90,7 +97,6 @@ public class Encryptor {
             signatureGenerator.generate().encode(encryptedOut);
         }
         compressedDataGenerator.close();
-        encryptedOut.close();
         encryptedOut.close();
         encryptedDataGenerator.close();
         fileInputStream.close();

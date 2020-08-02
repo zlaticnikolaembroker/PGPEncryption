@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.NoSuchProviderException;
 import java.security.Security;
+import java.util.Base64;
 import java.util.Iterator;
 
 public class Decryptor {
@@ -114,11 +115,12 @@ public class Decryptor {
 	                PGPLiteralData ld = (PGPLiteralData) message;
 	     
 	                InputStream unc = ld.getInputStream();
-	                int ch;
-	     
-	                while ((ch = unc.read()) >= 0) {
-	                    out.write(ch);
-	                }
+	                
+	                byte[] finalMessage = unc.readAllBytes();
+	                
+	                Base64.Decoder decoder = Base64.getDecoder();
+	                
+	                out.write(finalMessage);
 	                String label = "File successfully decrypted.";
 	                if (userId != null) {
 	                	label += " Sygned by: " + userId + ".";
