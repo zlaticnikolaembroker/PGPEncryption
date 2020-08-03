@@ -25,9 +25,11 @@ public class Signer {
         this.keyRings = keyRings;
     }
 
-    public void signFile(OutputStream out, String filePath, Key signingKey, String passphrase) throws PGPException,
+    public void signFile(OutputStream out, String filePath, Key signingKey, String passphrase, boolean radix64) throws PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, IOException, SignatureException {
-        out = new ArmoredOutputStream(out);
+        if (radix64) {
+            out = new ArmoredOutputStream(out);
+        }
 
         PGPSecretKey secretKey = keyRings.getSigningKey(signingKey.getUserId(), signingKey.getKeyId());
         PBESecretKeyDecryptor secretKeyDecryptor = new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(passphrase.toCharArray());

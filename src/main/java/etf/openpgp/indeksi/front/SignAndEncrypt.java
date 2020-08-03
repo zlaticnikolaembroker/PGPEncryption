@@ -99,6 +99,7 @@ public class SignAndEncrypt {
             Key signingKey = shouldSign ? signingKeyComboBox.getValue() : null;
             boolean shouldCompress = compressChbx.isSelected();
             boolean shouldArmor = radix64Chbx.isSelected();
+            String extension = "";
             try {
                 String password = null;
                 if (shouldSign && (password = PasswordVerificator.verify(signingKey.getKeyId(), keyRings)) == null) {
@@ -107,15 +108,16 @@ public class SignAndEncrypt {
                 }
                 if (recipientList.size() > 0) {
                     // ako imamo primaoce, radimo enkripciju i potpisivanje po potrebi
-                    String extension = shouldArmor ? ".asc" : ".gpg";
+                    extension = shouldArmor ? ".asc" : ".gpg";
                     String encryptedFilePath = filePath.concat(extension);
                     OutputStream out = new FileOutputStream(encryptedFilePath);
                     encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, shouldCompress, shouldArmor);
                 } else {
                     // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
-                    String signatureFilePath = filePath.concat(".asc");
+                    extension = shouldArmor ? ".asc" : ".sig";
+                    String signatureFilePath = filePath.concat(extension);
                     OutputStream out = new FileOutputStream(signatureFilePath);
-                    signer.signFile(out, filePath, signingKey, password);
+                    signer.signFile(out, filePath, signingKey, password, shouldArmor);
                 }
                 pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
             } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
