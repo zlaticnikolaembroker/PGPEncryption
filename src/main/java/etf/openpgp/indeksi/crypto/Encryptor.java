@@ -33,7 +33,9 @@ public class Encryptor {
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
                             String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
-        out = new ArmoredOutputStream(out);
+        if (radix64) {
+            out = new ArmoredOutputStream(out);
+        }
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(PGPEncryptedData.TRIPLE_DES,
                 integrityCheck, new SecureRandom(), "BC");
         for (Key key : recipients) {
@@ -80,13 +82,8 @@ public class Encryptor {
         byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = fileInputStream.read(buffer)) > 0) {
-        	if (radix64) {
-        		Base64.Encoder encoder = Base64.getEncoder();
-        		literalOut.write(encoder.encode(buffer).toString().getBytes(), 0, len);
-        	} else {
-        		literalOut.write(buffer, 0, len);
-        	}
-            
+            literalOut.write(buffer, 0, len);
+
             if (signatureGenerator != null) {
                 signatureGenerator.update(buffer, 0, len);
             }
