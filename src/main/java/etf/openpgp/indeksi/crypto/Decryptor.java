@@ -113,12 +113,15 @@ public class Decryptor {
 	     
 	                InputStream unc = ld.getInputStream();
 	                
-	                byte[] finalMessage = unc.readAllBytes();
+	                byte[] buffer = new byte[BUFFER_SIZE];
+	                int len;
+	                while ((len = unc.read(buffer)) > 0) {
+	                	out.write(buffer, 0, len);
+					}
 	                
-	                out.write(finalMessage);
 	                String label = "File successfully decrypted.";
 	                if (userId != null) {
-	                	label += " Sygned by: " + userId + ".";
+	                	label += " Signed by: " + userId + ".";
 	                }
 	                InfoScreen successScreen = new InfoScreen("File successfully decrypted", label);
 	                successScreen.showAndWait();
