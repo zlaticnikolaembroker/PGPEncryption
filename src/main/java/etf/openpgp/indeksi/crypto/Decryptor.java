@@ -45,8 +45,6 @@ public class Decryptor {
     public void decryptFile(InputStream in, OutputStream out)
         {
 	    	try {
-	            Security.addProvider(new BouncyCastleProvider());
-	     
 	            in = org.bouncycastle.openpgp.PGPUtil.getDecoderStream(in);
 	     
 	            PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(in);
@@ -89,7 +87,6 @@ public class Decryptor {
 	            if (message instanceof  PGPCompressedData) {
 	                PGPCompressedData cData = (PGPCompressedData) message;
 	                pgpFact = new PGPObjectFactory(cData.getDataStream());
-	                System.out.println("zipped");
 	                message = pgpFact.nextObject();
 	            }
 	            
@@ -117,8 +114,6 @@ public class Decryptor {
 	                InputStream unc = ld.getInputStream();
 	                
 	                byte[] finalMessage = unc.readAllBytes();
-	                
-	                Base64.Decoder decoder = Base64.getDecoder();
 	                
 	                out.write(finalMessage);
 	                String label = "File successfully decrypted.";
