@@ -1,10 +1,13 @@
 package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.models.Key;
+import etf.openpgp.indeksi.front.InfoScreen;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import java.util.Base64;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,7 +31,7 @@ public class Encryptor {
     }
 
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
-                            String signPassphrase, boolean integrityCheck) throws IOException, PGPException,
+                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
         out = new ArmoredOutputStream(out);
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(PGPEncryptedData.TRIPLE_DES,
@@ -40,13 +43,18 @@ public class Encryptor {
                     encryptedDataGenerator.addMethod(publicKey);
                 }
             } catch (PGPException | NoSuchProviderException e) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+                successScreen.showAndWait();
                 e.printStackTrace();
             }
         }
         OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[BUFFER_SIZE]);
 
         PGPCompressedDataGenerator compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
-        OutputStream compressedOut = compressedDataGenerator.open(encryptedOut);
+        if (shouldBeCompressed) {
+            encryptedOut = compressedDataGenerator.open(encryptedOut);    
+        }
+        
 
         PGPSignatureGenerator signatureGenerator = null;
         if (signingKey != null) {
@@ -61,18 +69,24 @@ public class Encryptor {
                 signatureSubpacketGenerator.setSignerUserID(false, userIDs.next());
                 signatureGenerator.setHashedSubpackets(signatureSubpacketGenerator.generate());
             }
-            signatureGenerator.generateOnePassVersion(false).encode(compressedOut);
+            signatureGenerator.generateOnePassVersion(false).encode(encryptedOut);
         }
 
         PGPLiteralDataGenerator literalDataGenerator = new PGPLiteralDataGenerator();
-        OutputStream literalOut = literalDataGenerator.open(compressedOut, PGPLiteralDataGenerator.BINARY, filePath,
+        OutputStream literalOut = literalDataGenerator.open(encryptedOut, PGPLiteralDataGenerator.BINARY, filePath,
                 new Date(), new byte[BUFFER_SIZE]);
 
         FileInputStream fileInputStream = new FileInputStream(filePath);
         byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = fileInputStream.read(buffer)) > 0) {
-            literalOut.write(buffer, 0, len);
+        	if (radix64) {
+        		Base64.Encoder encoder = Base64.getEncoder();
+        		literalOut.write(encoder.encode(buffer).toString().getBytes(), 0, len);
+        	} else {
+        		literalOut.write(buffer, 0, len);
+        	}
+            
             if (signatureGenerator != null) {
                 signatureGenerator.update(buffer, 0, len);
             }
@@ -80,14 +94,15 @@ public class Encryptor {
         literalOut.close();
         literalDataGenerator.close();
         if (signatureGenerator != null) {
-            signatureGenerator.generate().encode(compressedOut);
+            signatureGenerator.generate().encode(encryptedOut);
         }
-        compressedOut.close();
         compressedDataGenerator.close();
         encryptedOut.close();
         encryptedDataGenerator.close();
         fileInputStream.close();
         out.close();
+        InfoScreen successScreen = new InfoScreen("File successfully encrypted", "File successfully encrypted");
+        successScreen.showAndWait();
     }
 
 }

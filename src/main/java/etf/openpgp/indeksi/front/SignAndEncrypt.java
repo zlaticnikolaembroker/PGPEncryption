@@ -87,7 +87,10 @@ public class SignAndEncrypt {
         TableColumn<Key, String> keyNameCol = new TableColumn<>("Key name");
         keyNameCol.setCellValueFactory(new PropertyValueFactory("userId"));
         encryptionKeysTable.getColumns().add(keyNameCol);
-        signAndEncryptVBox.getChildren().addAll(recipientsLabel, encryptionKeysTable);
+        
+        CheckBox checkBox1 = new CheckBox("Compress?");
+        CheckBox checkBox2 = new CheckBox("Radix64 format?");
+        signAndEncryptVBox.getChildren().addAll(checkBox1, checkBox2, recipientsLabel, encryptionKeysTable);
 
         Button encryptBtn = new Button("Encrypt/Sign");
         encryptBtn.setOnAction(e -> {
@@ -104,7 +107,7 @@ public class SignAndEncrypt {
                     // ako imamo primaoce, radimo enkripciju i potpisivanje po potrebi
                     String encryptedFilePath = filePath.concat(".asc");
                     OutputStream out = new FileOutputStream(encryptedFilePath);
-                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true);
+                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, checkBox1.isSelected(), checkBox2.isSelected());
                 } else {
                     // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
                     String signatureFilePath = filePath.concat(".asc");
@@ -113,6 +116,8 @@ public class SignAndEncrypt {
                 }
                 pane.setCenter(keyTable.openSecretKeysTable(pane, stage));
             } catch (IOException | PGPException | NoSuchProviderException | NoSuchAlgorithmException | SignatureException exception) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", exception.getMessage());
+                successScreen.showAndWait();
                 exception.printStackTrace();
             }
         });
@@ -124,6 +129,7 @@ public class SignAndEncrypt {
 
         Button cancelBtn = new Button("Cancel");
         cancelBtn.setOnAction(e -> pane.setCenter(keyTable.openSecretKeysTable(pane, stage)));
+        
 
         signAndEncryptVBox.getChildren().addAll(encryptBtn, cancelBtn);
     }

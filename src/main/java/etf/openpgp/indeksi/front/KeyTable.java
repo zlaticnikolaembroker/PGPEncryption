@@ -162,7 +162,11 @@ public class KeyTable {
                                 if (deletionConfirmed) {
                                     Long keyId = keyColumn.getOriginalKeyId();
                                     boolean isPublic = keyColumn.getIsPublic();
-                                    if (deleteKey(keyId, isPublic)) refreshTableRows(tableView);
+                                    if (deleteKey(keyId, isPublic)) {
+                                    	InfoScreen successScreen = new InfoScreen("Keypair successfully deleted", "Keypair successfully deleted");
+            							successScreen.showAndWait();
+                                    	refreshTableRows(tableView);
+                                    }
                                 }
                             });
                             setGraphic(btn);
@@ -280,6 +284,8 @@ public class KeyTable {
                 keyRings.deletePublicKey(keyId);
                 keyDeleted = true;
             } catch (NumberFormatException e) {
+                InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
+                successScreen.showAndWait();
                 e.printStackTrace();
             }
         } else {
