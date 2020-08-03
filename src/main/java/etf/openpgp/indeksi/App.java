@@ -38,7 +38,9 @@ public class App extends Application
 
 	private void ChooseFileToEncryptClicked(Stage stage, BorderPane root) {
 		String filePath = chooseFile(stage);
-		root.setCenter(signAndEncrypt.openSignAndEncrypt(root, stage, keyTable, filePath, keyRings));
+		if (filePath != null) {
+			root.setCenter(signAndEncrypt.openSignAndEncrypt(root, stage, keyTable, filePath, keyRings));
+		}
 	}
 	
 	private File ChooseFileToDecryptClicked(Stage stage) {
