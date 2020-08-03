@@ -88,15 +88,17 @@ public class SignAndEncrypt {
         keyNameCol.setCellValueFactory(new PropertyValueFactory("userId"));
         encryptionKeysTable.getColumns().add(keyNameCol);
         
-        CheckBox checkBox1 = new CheckBox("Compress?");
-        CheckBox checkBox2 = new CheckBox("Radix64 format?");
-        signAndEncryptVBox.getChildren().addAll(checkBox1, checkBox2, recipientsLabel, encryptionKeysTable);
+        CheckBox compressChbx = new CheckBox("Compress?");
+        CheckBox radix64Chbx = new CheckBox("Radix64 format?");
+        signAndEncryptVBox.getChildren().addAll(compressChbx, radix64Chbx, recipientsLabel, encryptionKeysTable);
 
         Button encryptBtn = new Button("Encrypt/Sign");
         encryptBtn.setOnAction(e -> {
             List<Key> recipientList = new LinkedList<>(encryptionKeysTable.getSelectionModel().getSelectedItems());
             boolean shouldSign = signCheckBox.isSelected();
             Key signingKey = shouldSign ? signingKeyComboBox.getValue() : null;
+            boolean shouldCompress = compressChbx.isSelected();
+            boolean shouldArmor = radix64Chbx.isSelected();
             try {
                 String password = null;
                 if (shouldSign && (password = PasswordVerificator.verify(signingKey.getKeyId(), keyRings)) == null) {
@@ -105,9 +107,10 @@ public class SignAndEncrypt {
                 }
                 if (recipientList.size() > 0) {
                     // ako imamo primaoce, radimo enkripciju i potpisivanje po potrebi
-                    String encryptedFilePath = filePath.concat(".asc");
+                    String extension = shouldArmor ? ".asc" : ".gpg";
+                    String encryptedFilePath = filePath.concat(extension);
                     OutputStream out = new FileOutputStream(encryptedFilePath);
-                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, checkBox1.isSelected(), checkBox2.isSelected());
+                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, shouldCompress, shouldArmor);
                 } else {
                     // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
                     String signatureFilePath = filePath.concat(".asc");
