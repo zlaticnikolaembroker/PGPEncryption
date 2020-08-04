@@ -4,6 +4,8 @@ import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PGPContentVerifier;
 import org.bouncycastle.openpgp.operator.PGPContentVerifierBuilder;
 
+import etf.openpgp.indeksi.front.InfoScreen;
+
 import java.io.*;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
@@ -29,7 +31,7 @@ public class Verifier {
         try (FileInputStream fileToVerify = new FileInputStream(fileToVerifyName)) {
             PGPSignature pgpSignature = signatureList.get(0);
             PGPPublicKey publicKey = keyRings.getPublicKeyRings().getPublicKey(pgpSignature.getKeyID());
-            System.out.println("file is signed by: " + publicKey.getUserIDs().next());
+            
             byte[] buffer = new byte[BUFFER_SIZE];
             int len;
 
@@ -39,9 +41,15 @@ public class Verifier {
                 pgpSignature.update(buffer, 0, len);
             }
 
-            boolean verified = pgpSignature.verify();
-
-            System.out.println("verification result: " + verified);
+            String labelText = "";
+            if (pgpSignature.verify()) {
+            	labelText = "Signature is verified.";
+            } else {
+            	labelText = "Signature is not verified.";
+            }
+            	
+            InfoScreen screen = new InfoScreen("Signature verification", labelText);
+            screen.showAndWait();
 
         } catch (PGPException | IOException | NoSuchProviderException | SignatureException e) {
             e.printStackTrace();

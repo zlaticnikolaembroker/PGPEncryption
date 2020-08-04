@@ -5,7 +5,9 @@ import org.bouncycastle.openpgp.*;
 import etf.openpgp.indeksi.front.PasswordVerificator;
 import etf.openpgp.indeksi.front.InfoScreen;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -40,7 +42,7 @@ public class Decryptor {
             return pgpSecKey.extractPrivateKey(password.toCharArray(), "BC");
         }
     
-    public void decryptOrVerifyFile(InputStream in, OutputStream out, String signaturePath)
+    public void decryptOrVerifyFile(InputStream in, File outputFile, String signaturePath)
         {
 	    	try (InputStream inputStream = PGPUtil.getDecoderStream(in)) {
 
@@ -60,10 +62,10 @@ public class Decryptor {
 	            if (encryptedDataList == null) {
 	            	// nema enkriptovanih podataka, idemo na verifikaciju
 					if (pgpObject instanceof PGPCompressedData) {
+						//ovo ne bi nikad trebalo da se desi, jer je ili potpisan ili enkriptovan podatak.
 						System.out.println("compressed data");
 					}
 					if (pgpObject instanceof PGPSignatureList) {
-						System.out.println("pgp signature list");
 						verifier.verifySignature((PGPSignatureList) pgpObject, signaturePath);
 					}
 					return;
@@ -121,6 +123,7 @@ public class Decryptor {
 	                
 	                byte[] buffer = new byte[BUFFER_SIZE];
 	                int len;
+	                OutputStream out = new FileOutputStream(outputFile);
 	                while ((len = unc.read(buffer)) > 0) {
 	                	out.write(buffer, 0, len);
 					}

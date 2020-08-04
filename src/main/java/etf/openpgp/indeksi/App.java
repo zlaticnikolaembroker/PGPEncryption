@@ -164,10 +164,9 @@ public class App extends Application
 					try {
 						InputStream in = new FileInputStream(fileToDecrypt);
 						File outputFile = new File(formatOutputFileName(fileToDecrypt));
-						OutputStream out = new FileOutputStream(outputFile);
 						Decryptor decryptor = new Decryptor(keyRings);
 						try {
-							decryptor.decryptOrVerifyFile(in, out, fileToDecrypt.getPath());
+							decryptor.decryptOrVerifyFile(in, outputFile, fileToDecrypt.getPath());
 							root.setCenter(keyTable.openSecretKeysTable(root, stage));
 						} catch (Exception e) {
 							InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
