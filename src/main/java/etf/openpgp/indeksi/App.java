@@ -154,7 +154,7 @@ public class App extends Application
 			}
 		});
         
-        Menu DecryptMenu=new Menu("Decrypt");  
+        Menu DecryptMenu=new Menu("Decrypt/Verify");  
         MenuItem decryptMenuItem1 = new MenuItem("Choose file");
         decryptMenuItem1.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
