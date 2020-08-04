@@ -1,6 +1,8 @@
 package etf.openpgp.indeksi.crypto;
 
 import etf.openpgp.indeksi.crypto.models.Key;
+import etf.openpgp.indeksi.front.InfoScreen;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.openpgp.*;
@@ -55,6 +57,8 @@ public class Signer {
         signature.encode(bcpgOutputStream);
         bcpgOutputStream.close();
         out.close();
+        InfoScreen successScreen = new InfoScreen("File successfully sygned", "File successfully sygned");
+        successScreen.showAndWait();
     }
 
 }
