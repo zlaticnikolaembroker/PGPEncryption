@@ -43,7 +43,7 @@ public class Verifier {
 
             String labelText = "";
             if (pgpSignature.verify()) {
-            	labelText = "Signature is verified.";
+            	labelText = "Signature is verified, signed by " + publicKey.getUserIDs().next();
             } else {
             	labelText = "Signature is not verified.";
             }

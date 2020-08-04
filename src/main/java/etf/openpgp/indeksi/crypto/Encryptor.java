@@ -1,5 +1,6 @@
 package etf.openpgp.indeksi.crypto;
 
+import etf.openpgp.indeksi.crypto.models.EncryptionAlgorithms;
 import etf.openpgp.indeksi.crypto.models.Key;
 import etf.openpgp.indeksi.front.InfoScreen;
 
@@ -31,12 +32,12 @@ public class Encryptor {
     }
 
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
-                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64) throws IOException, PGPException,
+                            String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64, EncryptionAlgorithms encryptionAlgorithm) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
         if (radix64) {
             out = new ArmoredOutputStream(out);
         }
-        PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(PGPEncryptedData.TRIPLE_DES,
+        PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(encryptionAlgorithm.getValue(),
                 integrityCheck, new SecureRandom(), "BC");
         for (Key key : recipients) {
             try {

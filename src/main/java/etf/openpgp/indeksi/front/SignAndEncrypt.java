@@ -3,6 +3,7 @@ package etf.openpgp.indeksi.front;
 import etf.openpgp.indeksi.crypto.Encryptor;
 import etf.openpgp.indeksi.crypto.KeyRings;
 import etf.openpgp.indeksi.crypto.Signer;
+import etf.openpgp.indeksi.crypto.models.EncryptionAlgorithms;
 import etf.openpgp.indeksi.crypto.models.Key;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
@@ -25,8 +26,10 @@ import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SignAndEncrypt {
 
@@ -92,6 +95,14 @@ public class SignAndEncrypt {
         CheckBox radix64Chbx = new CheckBox("Radix64 format?");
         signAndEncryptVBox.getChildren().addAll(compressChbx, radix64Chbx, recipientsLabel, encryptionKeysTable);
 
+        ObservableList<String> posibleAlgorithms =
+                FXCollections.observableArrayList(Arrays.stream(EncryptionAlgorithms.values())
+                        .map(EncryptionAlgorithms::getLabel).collect(Collectors.toList()));
+        final ComboBox<String> comboBoxAlgorithms = new ComboBox<>(posibleAlgorithms);
+        comboBoxAlgorithms.setValue("3DES");
+
+        signAndEncryptVBox.getChildren().add(comboBoxAlgorithms);
+
         Button encryptBtn = new Button("Encrypt/Sign");
         encryptBtn.setOnAction(e -> {
             List<Key> recipientList = new LinkedList<>(encryptionKeysTable.getSelectionModel().getSelectedItems());
@@ -99,6 +110,7 @@ public class SignAndEncrypt {
             Key signingKey = shouldSign ? signingKeyComboBox.getValue() : null;
             boolean shouldCompress = compressChbx.isSelected();
             boolean shouldArmor = radix64Chbx.isSelected();
+            EncryptionAlgorithms encryptionAlgorithm = EncryptionAlgorithms.parse(comboBoxAlgorithms.getValue());
             String extension = "";
             try {
                 String password = null;
@@ -111,7 +123,7 @@ public class SignAndEncrypt {
                     extension = shouldArmor ? ".asc" : ".gpg";
                     String encryptedFilePath = filePath.concat(extension);
                     OutputStream out = new FileOutputStream(encryptedFilePath);
-                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, shouldCompress, shouldArmor);
+                    encryptor.encryptFile(out, filePath, recipientList, signingKey, password, true, shouldCompress, shouldArmor, encryptionAlgorithm);
                 } else {
                     // ako nemamo primaoce, radimo samo potpisivanje odabranim kljucem
                     extension = shouldArmor ? ".asc" : ".sig";
