@@ -163,13 +163,11 @@ public class App extends Application
 				if (fileToDecrypt != null) {
 					try {
 						InputStream in = new FileInputStream(fileToDecrypt);
-						System.out.println("file path = " + fileToDecrypt.getPath());
-						System.out.println("file name = " + formatOutputFileName(fileToDecrypt));
 						File outputFile = new File(formatOutputFileName(fileToDecrypt));
 						OutputStream out = new FileOutputStream(outputFile);
 						Decryptor decryptor = new Decryptor(keyRings);
 						try {
-							decryptor.decryptFile(in, out);
+							decryptor.decryptOrVerifyFile(in, out, fileToDecrypt.getPath());
 							root.setCenter(keyTable.openSecretKeysTable(root, stage));
 						} catch (Exception e) {
 							InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());

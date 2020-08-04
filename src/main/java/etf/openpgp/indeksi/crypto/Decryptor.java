@@ -1,26 +1,24 @@
 package etf.openpgp.indeksi.crypto;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.*;
 
 import etf.openpgp.indeksi.front.PasswordVerificator;
 import etf.openpgp.indeksi.front.InfoScreen;
 
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.util.Base64;
 import java.util.Iterator;
 
 public class Decryptor {
     private static final int BUFFER_SIZE = 1 << 16; // 64k
 
     private final KeyRings keyRings;
+    private final Verifier verifier;
 
     public Decryptor(KeyRings keyRings) {
         this.keyRings = keyRings;
+        this.verifier = new Verifier(keyRings);
     }
     
     private PGPPrivateKey findSecretKey(long keyID)
@@ -42,27 +40,35 @@ public class Decryptor {
             return pgpSecKey.extractPrivateKey(password.toCharArray(), "BC");
         }
     
-    public void decryptFile(InputStream in, OutputStream out)
+    public void decryptOrVerifyFile(InputStream in, OutputStream out, String signaturePath)
         {
-	    	try {
-	            in = org.bouncycastle.openpgp.PGPUtil.getDecoderStream(in);
-	     
-	            PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(in);
-	            PGPEncryptedDataList encryptedDataList;
+	    	try (InputStream inputStream = PGPUtil.getDecoderStream(in)) {
+
+	            PGPObjectFactory pgpObjectFactory = new PGPObjectFactory(inputStream);
+	            PGPEncryptedDataList encryptedDataList = null;
 	     
 	            Object pgpObject = pgpObjectFactory.nextObject();
-	            //
-	            // the first object might be a PGP marker packet.
-	            //
-	            if (pgpObject instanceof  PGPEncryptedDataList) {
+
+	            // ako je prvi objekat marker, pomeramo se na sledeci
+				if (pgpObject instanceof PGPMarker) {
+					pgpObject = pgpObjectFactory.nextObject();
+				}
+
+	            if (pgpObject instanceof PGPEncryptedDataList) {
 	                encryptedDataList = (PGPEncryptedDataList) pgpObject;
-	            } else {
-	            	encryptedDataList = (PGPEncryptedDataList) pgpObjectFactory.nextObject();
 	            }
-	     
-	            //
-	            // find the secret key
-	            //
+	            if (encryptedDataList == null) {
+	            	// nema enkriptovanih podataka, idemo na verifikaciju
+					if (pgpObject instanceof PGPCompressedData) {
+						System.out.println("compressed data");
+					}
+					if (pgpObject instanceof PGPSignatureList) {
+						System.out.println("pgp signature list");
+						verifier.verifySignature((PGPSignatureList) pgpObject, signaturePath);
+					}
+					return;
+				}
+
 	            Iterator<PGPPublicKeyEncryptedData> publicKeyEncryptedDataIterator = encryptedDataList.getEncryptedDataObjects();
 	            PGPPrivateKey secretKey = null;
 	            PGPPublicKeyEncryptedData pbe = null;
