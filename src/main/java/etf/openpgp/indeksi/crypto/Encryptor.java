@@ -34,8 +34,9 @@ public class Encryptor {
     public void encryptFile(OutputStream out, String filePath, List<Key> recipients, Key signingKey,
                             String signPassphrase, boolean integrityCheck, boolean shouldBeCompressed, boolean radix64, EncryptionAlgorithms encryptionAlgorithm) throws IOException, PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
+        OutputStream outputStream = out;
         if (radix64) {
-            out = new ArmoredOutputStream(out);
+            outputStream = new ArmoredOutputStream(out);
         }
         PGPEncryptedDataGenerator encryptedDataGenerator = new PGPEncryptedDataGenerator(encryptionAlgorithm.getValue(),
                 integrityCheck, new SecureRandom(), "BC");
@@ -51,7 +52,7 @@ public class Encryptor {
                 e.printStackTrace();
             }
         }
-        OutputStream encryptedOut = encryptedDataGenerator.open(out, new byte[BUFFER_SIZE]);
+        OutputStream encryptedOut = encryptedDataGenerator.open(outputStream, new byte[BUFFER_SIZE]);
 
         PGPCompressedDataGenerator compressedDataGenerator = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
         if (shouldBeCompressed) {
@@ -98,6 +99,7 @@ public class Encryptor {
         encryptedOut.close();
         encryptedDataGenerator.close();
         fileInputStream.close();
+        outputStream.close();
         out.close();
         InfoScreen successScreen = new InfoScreen("File successfully encrypted", "File successfully encrypted");
         successScreen.showAndWait();

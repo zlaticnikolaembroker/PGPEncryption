@@ -29,8 +29,9 @@ public class Signer {
 
     public void signFile(OutputStream out, String filePath, Key signingKey, String passphrase, boolean radix64) throws PGPException,
             NoSuchProviderException, NoSuchAlgorithmException, IOException, SignatureException {
+        OutputStream outputStream = out;
         if (radix64) {
-            out = new ArmoredOutputStream(out);
+            outputStream = new ArmoredOutputStream(out);
         }
 
         PGPSecretKey secretKey = keyRings.getSigningKey(signingKey.getUserId(), signingKey.getKeyId());
@@ -45,7 +46,7 @@ public class Signer {
             pgpSignatureGenerator.setHashedSubpackets(signatureSubpacketGenerator.generate());
         }
 
-        BCPGOutputStream bcpgOutputStream = new BCPGOutputStream(out);
+        BCPGOutputStream bcpgOutputStream = new BCPGOutputStream(outputStream);
         FileInputStream fileInputStream = new FileInputStream(filePath);
         int len;
         byte[] buffer = new byte[BUFFER_SIZE];
@@ -56,6 +57,7 @@ public class Signer {
         PGPSignature signature = pgpSignatureGenerator.generate();
         signature.encode(bcpgOutputStream);
         bcpgOutputStream.close();
+        outputStream.close();
         out.close();
         InfoScreen successScreen = new InfoScreen("File successfully sygned", "File successfully sygned");
         successScreen.showAndWait();
