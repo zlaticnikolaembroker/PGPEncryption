@@ -123,10 +123,24 @@ public class KeyRings {
             Object o;
             while ((o = pgpObjectFactory.nextObject()) !=null) {
                 if (o instanceof PGPSecretKeyRing) {
+                    PGPSecretKeyRing secretKeyRing = (PGPSecretKeyRing) o;
+                    if (secretKeyRings.contains(secretKeyRing.getSecretKey().getKeyID())) {
+                        InfoScreen infoScreen = new InfoScreen("Keyring already exists",
+                                "Keyring with user id" + secretKeyRing.getSecretKey().getUserIDs().next() + " already exists.");
+                        infoScreen.showAndWait();
+                        return;
+                    }
                     importSecretKeyRing((PGPSecretKeyRing) o);
                     InfoScreen successScreen = new InfoScreen("Secret key successfully imported.", "Secret key successfully imported.");
                     successScreen.showAndWait();
                 } else if (o instanceof PGPPublicKeyRing) {
+                    PGPPublicKeyRing publicKeyRing = (PGPPublicKeyRing) o;
+                    if (publicKeyRings.contains(publicKeyRing.getPublicKey().getKeyID())) {
+                        InfoScreen infoScreen = new InfoScreen("Keyring already exists",
+                                "Keyring with user id" + publicKeyRing.getPublicKey().getUserIDs().next() + " already exists.");
+                        infoScreen.showAndWait();
+                        return;
+                    }
                     importPublicKeyRing((PGPPublicKeyRing) o);
                     InfoScreen successScreen = new InfoScreen("Public key successfully imported.", "Public key successfully imported.");
                     successScreen.showAndWait();
@@ -135,7 +149,7 @@ public class KeyRings {
                     successScreen.showAndWait();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | PGPException e) {
         	InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
             successScreen.showAndWait();
             e.printStackTrace();
