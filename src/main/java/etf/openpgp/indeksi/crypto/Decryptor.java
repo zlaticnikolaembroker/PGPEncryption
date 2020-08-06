@@ -3,6 +3,8 @@ package etf.openpgp.indeksi.crypto;
 import org.bouncycastle.openpgp.*;
 
 import etf.openpgp.indeksi.front.PasswordVerificator;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import etf.openpgp.indeksi.front.InfoScreen;
 
 import java.io.File;
@@ -42,7 +44,7 @@ public class Decryptor {
             return pgpSecKey.extractPrivateKey(password.toCharArray(), "BC");
         }
     
-    public void decryptOrVerifyFile(InputStream in, File outputFile, String signaturePath)
+    public void decryptOrVerifyFile(InputStream in, String signaturePath, Stage stage)
         {
 	    	try (InputStream inputStream = PGPUtil.getDecoderStream(in)) {
 
@@ -117,12 +119,26 @@ public class Decryptor {
 	    		}
 	     
 	            if (message instanceof  PGPLiteralData) {
-	                PGPLiteralData ld = (PGPLiteralData) message;
-	     
+	                FileChooser fileChooser = new FileChooser();
+	        		fileChooser.setTitle("Choose where you want to save decrypted file.");
+	        		File outputFile = fileChooser.showSaveDialog(stage);
+	        		int counter = 0;
+	        		while (counter < 2 && outputFile == null) {
+	        			fileChooser = new FileChooser();
+		        		fileChooser.setTitle("Choose where you want to save decrypted file.");
+		        		outputFile = fileChooser.showSaveDialog(stage);
+		        		counter++;
+	        		}
+	        		
+	        		if (outputFile == null) {
+	        			return;
+	        		}
+	        		
+	        		PGPLiteralData ld = (PGPLiteralData) message;
 	                InputStream unc = ld.getInputStream();
-	                
 	                byte[] buffer = new byte[BUFFER_SIZE];
 	                int len;
+	                
 	                OutputStream out = new FileOutputStream(outputFile);
 	                while ((len = unc.read(buffer)) > 0) {
 	                	out.write(buffer, 0, len);

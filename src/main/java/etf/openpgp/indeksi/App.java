@@ -102,24 +102,6 @@ public class App extends Application
 		}
 		return null;
 	}
-
-	private String formatOutputFileName(File inputFile){
-		String name = inputFile.getName();
-		String filePath = inputFile.getPath();
-		String fileLocation = inputFile.getPath().substring(0, filePath.lastIndexOf(File.separator));
-		int dotIndex = name.lastIndexOf('.');
-		String fileName = "";
-		if (dotIndex != -1) {
-			String fileExtension = name.substring(dotIndex);
-			if (".asc".equals(fileExtension) || ".gpg".equals(fileExtension)) {
-				fileName = name.substring(0, dotIndex);
-			} else {
-				fileName = name.concat(".decrypted");
-			}
-		}
-
-		return fileLocation + File.separator + fileName;
-	}
 	
     @Override
     public void start(final Stage stage) {
@@ -163,10 +145,9 @@ public class App extends Application
 				if (fileToDecrypt != null) {
 					try {
 						InputStream in = new FileInputStream(fileToDecrypt);
-						File outputFile = new File(formatOutputFileName(fileToDecrypt));
 						Decryptor decryptor = new Decryptor(keyRings);
 						try {
-							decryptor.decryptOrVerifyFile(in, outputFile, fileToDecrypt.getPath());
+							decryptor.decryptOrVerifyFile(in, fileToDecrypt.getPath(), stage);
 							root.setCenter(keyTable.openSecretKeysTable(root, stage));
 						} catch (Exception e) {
 							InfoScreen successScreen = new InfoScreen("Something went wrong.", e.getMessage());
