@@ -146,9 +146,13 @@ public class KeyRings {
         savePublicKeyRing();
     }
 
-    public void importSecretKeyRing(PGPSecretKeyRing secretKeyRing) {
+    public void importSecretKeyRing(PGPSecretKeyRing secretKeyRing) throws IOException {
         secretKeyRings = PGPSecretKeyRingCollection.addSecretKeyRing(secretKeyRings, secretKeyRing);
+        PGPPublicKey publicKey = secretKeyRing.getPublicKey();
+        PGPPublicKeyRing pgpPublicKeyRing = new PGPPublicKeyRing(publicKey.getEncoded());
+        publicKeyRings = PGPPublicKeyRingCollection.addPublicKeyRing(publicKeyRings, pgpPublicKeyRing);
         saveSecretKeyRing();
+        savePublicKeyRing();
     }
 
     public void exportSecretKeyRing(String fileName, String userId) {
