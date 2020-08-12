@@ -6,12 +6,10 @@ import etf.openpgp.indeksi.front.PasswordVerificator;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import etf.openpgp.indeksi.front.InfoScreen;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.util.io.Streams;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Iterator;
 
 public class Decryptor {
@@ -90,67 +88,73 @@ public class Decryptor {
 	            InputStream clear = pbe.getDataStream(secretKey, "BC");
 	     
 	            PGPObjectFactory plainFact = new PGPObjectFactory(clear);
-	     
-	            Object message = plainFact.nextObject();
-	            PGPObjectFactory pgpFact = null;
-	            // check if data is ZIP-ed
-	            if (message instanceof  PGPCompressedData) {
-	                PGPCompressedData cData = (PGPCompressedData) message;
-	                pgpFact = new PGPObjectFactory(cData.getDataStream());
-	                message = pgpFact.nextObject();
-	            }
-	            
-	            PGPOnePassSignature ops = null;
-	            String userId = null;
-	            if (message instanceof PGPOnePassSignatureList) {
-	    			PGPOnePassSignatureList p1 = (PGPOnePassSignatureList) message;
-	    			ops = p1.get(0);
-	    			long keyID = ops.getKeyID();
-	    			PGPPublicKey signerPublicKey = this.keyRings.getPublicKeyRings().getPublicKey(keyID);
-	    			if (signerPublicKey.getUserIDs().hasNext()) {
-	    				userId = (String) signerPublicKey.getUserIDs().next();
-	    			}
-	    			ops.initVerify(signerPublicKey, "BC");
-	    			if (pgpFact == null) {
-	    				message = plainFact.nextObject();
-	    			} else {
-	    				message = pgpFact.nextObject();
-	    			}
-	    		}
-	     
-	            if (message instanceof  PGPLiteralData) {
-	                FileChooser fileChooser = new FileChooser();
-	        		fileChooser.setTitle("Choose where you want to save decrypted file.");
-	        		File outputFile = fileChooser.showSaveDialog(stage);
-	        		int counter = 0;
-	        		while (counter < 2 && outputFile == null) {
-	        			fileChooser = new FileChooser();
-		        		fileChooser.setTitle("Choose where you want to save decrypted file.");
-		        		outputFile = fileChooser.showSaveDialog(stage);
-		        		counter++;
-	        		}
-	        		
-	        		if (outputFile == null) {
-	        			return;
-	        		}
-	        		
-	        		PGPLiteralData ld = (PGPLiteralData) message;
-	                InputStream unc = ld.getInputStream();
-	                byte[] buffer = new byte[BUFFER_SIZE];
-	                int len;
-	                
-	                OutputStream out = new FileOutputStream(outputFile);
-	                while ((len = unc.read(buffer)) > 0) {
-	                	out.write(buffer, 0, len);
+
+				Object message = plainFact.nextObject();
+				PGPOnePassSignatureList onePassSignatureList = null;
+				PGPSignatureList signatureList = null;
+				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				StringBuilder labelTextBuilder = new StringBuilder();
+				while (message != null) {
+					if (message instanceof PGPCompressedData) {
+						plainFact = new PGPObjectFactory(((PGPCompressedData) message).getDataStream());
+						message = plainFact.nextObject();
 					}
-	                
-	                String label = "File successfully decrypted.";
-	                if (userId != null) {
-	                	label += " Signed by: " + userId + ".";
-	                }
-	                InfoScreen successScreen = new InfoScreen("File successfully decrypted", label);
-	                successScreen.showAndWait();
-	            }
+
+					if (message instanceof PGPLiteralData) {
+						Streams.pipeAll(((PGPLiteralData) message).getInputStream(), bos);
+					} else if (message instanceof PGPOnePassSignatureList) {
+						onePassSignatureList = (PGPOnePassSignatureList) message;
+					} else if (message instanceof PGPSignatureList) {
+						signatureList = (PGPSignatureList) message;
+					}
+					message = plainFact.nextObject();
+				}
+
+				PGPPublicKey publicKey = null;
+				if (onePassSignatureList != null && signatureList != null) {
+					for (int i = 0; i < onePassSignatureList.size(); i++) {
+						PGPOnePassSignature onePassSignature = onePassSignatureList.get(i);
+						publicKey = keyRings.getPublicKeyRings().getPublicKey(onePassSignature.getKeyID());
+						if (publicKey != null) {
+							onePassSignature.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), publicKey);
+							onePassSignature.update(bos.toByteArray());
+							PGPSignature signature = signatureList.get(i);
+							if (onePassSignature.verify(signature)) {
+								labelTextBuilder.append(" signed by " + publicKey.getUserIDs().next() + " and verified ");
+							} else {
+								labelTextBuilder.append(" signature by " + publicKey.getUserIDs().next() + " could not be verified ");
+							}
+						} else {
+							labelTextBuilder.append(" signed with unknown key");
+						}
+					}
+				} else {
+					labelTextBuilder.append(" not signed");
+				}
+
+				FileChooser fileChooser = new FileChooser();
+				fileChooser.setTitle("Choose where you want to save decrypted file.");
+				File outputFile = fileChooser.showSaveDialog(stage);
+				int counter = 0;
+				while (counter < 2 && outputFile == null) {
+					fileChooser = new FileChooser();
+					fileChooser.setTitle("Choose where you want to save decrypted file.");
+					outputFile = fileChooser.showSaveDialog(stage);
+					counter++;
+				}
+
+				if (outputFile == null) {
+					return;
+				}
+
+				OutputStream out = new FileOutputStream(outputFile);
+				out.write(bos.toByteArray());
+				out.flush();
+				out.close();
+
+				InfoScreen success = new InfoScreen("File successfully decrypted", "File successfully decrypted " + labelTextBuilder.toString());
+				success.showAndWait();
+
 	        } catch(Exception e) {
                 InfoScreen successScreen = new InfoScreen("Something went wrong", e.getMessage());
 	            successScreen.showAndWait();
