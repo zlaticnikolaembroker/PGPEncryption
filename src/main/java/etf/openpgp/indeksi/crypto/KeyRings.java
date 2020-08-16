@@ -128,22 +128,22 @@ public class KeyRings {
                         InfoScreen infoScreen = new InfoScreen("Keyring already exists",
                                 "Keyring with user id" + secretKeyRing.getSecretKey().getUserIDs().next() + " already exists.");
                         infoScreen.showAndWait();
-                        return;
+                    } else {
+                    	importSecretKeyRing((PGPSecretKeyRing) o);
+                    	InfoScreen successScreen = new InfoScreen("Secret key successfully imported.", "Secret key successfully imported.");
+                    	successScreen.showAndWait();
                     }
-                    importSecretKeyRing((PGPSecretKeyRing) o);
-                    InfoScreen successScreen = new InfoScreen("Secret key successfully imported.", "Secret key successfully imported.");
-                    successScreen.showAndWait();
                 } else if (o instanceof PGPPublicKeyRing) {
                     PGPPublicKeyRing publicKeyRing = (PGPPublicKeyRing) o;
                     if (publicKeyRings.contains(publicKeyRing.getPublicKey().getKeyID())) {
                         InfoScreen infoScreen = new InfoScreen("Keyring already exists",
                                 "Keyring with user id" + publicKeyRing.getPublicKey().getUserIDs().next() + " already exists.");
                         infoScreen.showAndWait();
-                        return;
+                    } else {
+                    	importPublicKeyRing((PGPPublicKeyRing) o);
+                    	InfoScreen successScreen = new InfoScreen("Public key successfully imported.", "Public key successfully imported.");
+                    	successScreen.showAndWait();
                     }
-                    importPublicKeyRing((PGPPublicKeyRing) o);
-                    InfoScreen successScreen = new InfoScreen("Public key successfully imported.", "Public key successfully imported.");
-                    successScreen.showAndWait();
                 } else {
                 	InfoScreen successScreen = new InfoScreen("File doesn't include any key.", "File doesn't include any key.");
                     successScreen.showAndWait();
