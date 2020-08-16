@@ -76,9 +76,15 @@ public class SignAndEncrypt {
 
         ObservableList<Key> signingKeyList = FXCollections.observableList(keyRings.getSigningKeys());
         ComboBox<Key> signingKeyComboBox = new ComboBox<>(signingKeyList);
-        signingKeyComboBox.setValue(signingKeyList.get(0));
-        signingKeyComboBox.disableProperty().bind(Bindings.createBooleanBinding(() -> !signCheckBox.isSelected(),
-                signCheckBox.selectedProperty()));
+        if (signingKeyList.isEmpty()) {
+            signCheckBox.setSelected(false);
+            signCheckBox.setDisable(true);
+            signingKeyComboBox.setDisable(true);
+        } else {
+            signingKeyComboBox.setValue(signingKeyList.get(0));
+            signingKeyComboBox.disableProperty().bind(Bindings.createBooleanBinding(() -> !signCheckBox.isSelected(),
+                    signCheckBox.selectedProperty()));
+        }
         signingBox.getChildren().addAll(signCheckBox, signLabel, signingKeyComboBox);
         signAndEncryptVBox.getChildren().add(signingBox);
 
