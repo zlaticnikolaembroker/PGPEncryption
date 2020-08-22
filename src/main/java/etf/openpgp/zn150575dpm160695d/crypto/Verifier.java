@@ -1,10 +1,10 @@
-package etf.openpgp.indeksi.crypto;
+package etf.openpgp.zn150575dpm160695d.crypto;
 
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PGPContentVerifier;
 import org.bouncycastle.openpgp.operator.PGPContentVerifierBuilder;
 
-import etf.openpgp.indeksi.front.InfoScreen;
+import etf.openpgp.zn150575dpm160695d.front.InfoScreen;
 
 import java.io.*;
 import java.security.NoSuchProviderException;

@@ -1,14 +1,14 @@
-package etf.openpgp.indeksi.crypto;
-
-import etf.openpgp.indeksi.crypto.generators.KeyPairGenerator;
-import etf.openpgp.indeksi.crypto.models.Key;
-import etf.openpgp.indeksi.front.InfoScreen;
+package etf.openpgp.zn150575dpm160695d.crypto;
 
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.openpgp.*;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+
+import etf.openpgp.zn150575dpm160695d.crypto.generators.KeyPairGenerator;
+import etf.openpgp.zn150575dpm160695d.crypto.models.Key;
+import etf.openpgp.zn150575dpm160695d.front.InfoScreen;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -159,12 +159,28 @@ public class KeyRings {
         publicKeyRings = PGPPublicKeyRingCollection.addPublicKeyRing(publicKeyRings, publicKeyRing);
         savePublicKeyRing();
     }
+    
+    private boolean checkIfPublicKeyExists(long publicKeyId) {
+    	
+    	Iterator<PGPPublicKeyRing> keyRingsIter = publicKeyRings.getKeyRings();
+        while (keyRingsIter.hasNext()) {
+            PGPPublicKeyRing keyRing = keyRingsIter.next();
+            if (keyRing.getPublicKey().getKeyID() == publicKeyId) {
+            	return true;
+            }
+        }
+    	
+    	return false;
+    }
 
     public void importSecretKeyRing(PGPSecretKeyRing secretKeyRing) throws IOException {
         secretKeyRings = PGPSecretKeyRingCollection.addSecretKeyRing(secretKeyRings, secretKeyRing);
         PGPPublicKey publicKey = secretKeyRing.getPublicKey();
         PGPPublicKeyRing pgpPublicKeyRing = new PGPPublicKeyRing(publicKey.getEncoded());
-        publicKeyRings = PGPPublicKeyRingCollection.addPublicKeyRing(publicKeyRings, pgpPublicKeyRing);
+        long publicKeyId = pgpPublicKeyRing.getPublicKey().getKeyID();
+        if (!checkIfPublicKeyExists(publicKeyId)) {
+        	publicKeyRings = PGPPublicKeyRingCollection.addPublicKeyRing(publicKeyRings, pgpPublicKeyRing);
+        }
         saveSecretKeyRing();
         savePublicKeyRing();
     }

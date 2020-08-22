@@ -1,9 +1,10 @@
-package etf.openpgp.indeksi;
+package etf.openpgp.zn150575dpm160695d;
 
-import etf.openpgp.indeksi.crypto.KeyRings;
-import etf.openpgp.indeksi.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPException;
+
+import etf.openpgp.zn150575dpm160695d.crypto.KeyRings;
+import etf.openpgp.zn150575dpm160695d.crypto.generators.RSAKeyPairGenerator;
 
 import java.security.Security;
 

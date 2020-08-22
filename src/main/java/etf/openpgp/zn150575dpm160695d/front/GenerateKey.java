@@ -1,4 +1,4 @@
-package etf.openpgp.indeksi.front;
+package etf.openpgp.zn150575dpm160695d.front;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -6,8 +6,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import etf.openpgp.indeksi.crypto.models.EncryptionAlgorithms;
-import etf.openpgp.indeksi.crypto.KeyRings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,6 +20,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import org.bouncycastle.openpgp.PGPException;
+
+import etf.openpgp.zn150575dpm160695d.crypto.KeyRings;
+import etf.openpgp.zn150575dpm160695d.crypto.models.EncryptionAlgorithms;
 
 public class GenerateKey {
 	

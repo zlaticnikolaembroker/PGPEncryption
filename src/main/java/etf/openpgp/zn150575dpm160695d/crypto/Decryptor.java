@@ -1,13 +1,15 @@
-package etf.openpgp.indeksi.crypto;
+package etf.openpgp.zn150575dpm160695d.crypto;
 
 import org.bouncycastle.openpgp.*;
 
-import etf.openpgp.indeksi.front.PasswordVerificator;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import etf.openpgp.indeksi.front.InfoScreen;
+
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
 import org.bouncycastle.util.io.Streams;
+
+import etf.openpgp.zn150575dpm160695d.front.InfoScreen;
+import etf.openpgp.zn150575dpm160695d.front.PasswordVerificator;
 
 import java.io.*;
 import java.util.Iterator;

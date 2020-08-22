@@ -1,4 +1,4 @@
-package etf.openpgp.indeksi.front;
+package etf.openpgp.zn150575dpm160695d.front;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
-import etf.openpgp.indeksi.crypto.KeyRings;
+import etf.openpgp.zn150575dpm160695d.crypto.KeyRings;
 import javafx.geometry.Insets;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;

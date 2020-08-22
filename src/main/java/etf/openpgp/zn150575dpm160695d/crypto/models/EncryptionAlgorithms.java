@@ -1,4 +1,4 @@
-package etf.openpgp.indeksi.crypto.models;
+package etf.openpgp.zn150575dpm160695d.crypto.models;
 
 public enum EncryptionAlgorithms {
     IDEA(1, "IDEA"),

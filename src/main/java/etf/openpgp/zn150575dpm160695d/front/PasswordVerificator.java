@@ -1,8 +1,8 @@
-package etf.openpgp.indeksi.front;
-
-import etf.openpgp.indeksi.crypto.KeyRings;
+package etf.openpgp.zn150575dpm160695d.front;
 
 import java.util.Optional;
+
+import etf.openpgp.zn150575dpm160695d.crypto.KeyRings;
 
 public class PasswordVerificator {
 
